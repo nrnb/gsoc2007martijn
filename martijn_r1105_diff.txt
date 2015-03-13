@@ -1,0 +1,484 @@
+Index: trunk/src/core/org/pathvisio/model/ConvertType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ConvertType.java	(revision 1104)
++++ trunk/src/core/org/pathvisio/model/ConvertType.java	(revision 1105)
+@@ -1,110 +0,0 @@
+-// PathVisio,
+-// a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 BiGCaT Bioinformatics
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License"); 
+-// you may not use this file except in compliance with the License. 
+-// You may obtain a copy of the License at 
+-// 
+-// http://www.apache.org/licenses/LICENSE-2.0 
+-//  
+-// Unless required by applicable law or agreed to in writing, software 
+-// distributed under the License is distributed on an "AS IS" BASIS, 
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+-// See the License for the specific language governing permissions and 
+-// limitations under the License.
+-//
+-package org.pathvisio.model;
+-
+-import java.awt.Color;
+-import java.math.BigDecimal;
+-
+-public class ConvertType
+-{
+-    public static int parseIntSafe (String s, int def)
+-    {
+-    	int result = def;
+-    	try
+-    	{
+-    		result = Integer.parseInt(s);
+-    	}
+-    	catch (Exception e) {}
+-    	return result;
+-    }
+-
+-    public static double parseDoubleSafe (String s, double def)
+-    {
+-    	double result = def;
+-    	try
+-    	{
+-    		result = Double.parseDouble(s);
+-    	}
+-    	catch (Exception e) {}
+-    	return result;
+-    }
+-
+-    public static String makeInteger (String s)
+-    {
+-    	double d = Double.parseDouble(s);
+-        BigDecimal b = BigDecimal.valueOf((long)d);
+-        return b.toString();
+-    }
+-
+-    public static String toGmmlColor(String s)
+-    {
+-        int i = Integer.parseInt(s);
+-        if (i == -1)
+-        {
+-        	return "Transparent";
+-        }
+-        
+-        String hexstring = Integer.toHexString(i);
+-
+-        // pad with zeroes up to a lenght of 6.
+-        while (hexstring.length() < 6)
+-        {
+-        	hexstring = "0" + hexstring;
+-        }
+-        
+-        return hexstring;
+-    }
+-    
+-    public static Color fromMappColor(String s)
+-    {
+-    	
+-    	int i = Integer.parseInt(s);
+-    	
+-    	Color result = new Color(
+-    			i & 0xFF,
+-    			(i & 0xFF00) >> 8,
+-    			(i & 0xFF0000) >> 16
+-    	);
+-    	
+-    	return result;
+-    }
+-    
+-    public static String toMappColor(String s)
+-    {
+-    
+-    	if (s.equals("Transparent"))
+-    	{
+-    		return "-1";
+-    	}
+-    	else
+-    	{
+-			int i = Integer.parseInt(s, 16);
+-			return Integer.toString(i);
+-    	}
+-    }
+-    
+-    public static String toMappColor(Color rgb, boolean fTransparent)
+-    {
+-    	if (fTransparent)
+-    		return "-1";
+-    	else
+-    	{
+-	    	int c = (rgb.getRed()) + (rgb.getGreen() << 8) + (rgb.getBlue() << 16);
+-	    	return "" + c;
+-    	}
+-    }
+-}
+Index: trunk/src/core/org/pathvisio/model/MappFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 1104)
++++ trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 1105)
+@@ -17,6 +17,7 @@
+ // $Id: MappToGmml.java,v 1.5 2005/10/21 12:33:27 gontran Exp $
+ package org.pathvisio.model;
+ 
++import java.awt.Color;
+ import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStream;
+@@ -433,7 +434,7 @@
+ 							unmapShapeType(o, row);
+ 							break;
+ 						case CELLA:
+-						case PROTEINB:
++						case RIBOSOME:
+ 						case ORGANA:
+ 						case ORGANB:
+ 						case ORGANC:
+@@ -441,8 +442,8 @@
+ 							break;
+ 						case PENTAGON: //TODO: incorrect separation
+ 						case HEXAGON:
+-						case RIBOSOME:
+ 						case TRIANGLE:
++						case PROTEINB:
+ 						case VESICLE:							
+ 							unmapComplexShapeType(o, row);
+ 					}
+@@ -576,21 +577,9 @@
+     	mappObject[colCenterY] = "" + o.getMStartY();
+     	mappObject[colSecondX] = "" + o.getMEndX();
+     	mappObject[colSecondY] = "" + o.getMEndY();
+-    	unmapColor (o, mappObject);    	
++		mappObject[colColor] = toMappColor(o.getColor(), false);    	
+     }
+ 
+-	private static void mapColor(PathwayElement o, String[] mappObject)
+-	{
+-        int i = Integer.parseInt(mappObject[colColor]);
+-        o.setTransparent(i < 0);
+-		o.setColor(ConvertType.fromMappColor(mappObject[colColor]));	
+-	}
+-
+-	private static void unmapColor(PathwayElement o, String[] mappObject)
+-	{
+-		mappObject[colColor] = ConvertType.toMappColor(o.getColor(), o.isTransparent());	
+-	}
+-
+ 	private static Map<String,LineType> mappLineTypes = initMappLineTypes();
+ 	
+ 	static private Map<String,LineType> initMappLineTypes()
+@@ -624,7 +613,7 @@
+         o.setMStartY(Double.parseDouble(mappObject[colCenterY]));
+         o.setMEndX(Double.parseDouble(mappObject[colSecondX]));
+         o.setMEndY(Double.parseDouble(mappObject[colSecondY]));
+-        mapColor(o, mappObject);        
++		o.setColor(fromMappColor(mappObject[colColor]));	
+         return o;
+ 	}
+     
+@@ -683,7 +672,7 @@
+     	mappObject[colType] = "Brace";    	
+     	mappObject[colRotation] = "" + o.getOrientation();    	
+     	unmapShape (o, mappObject);
+-    	unmapColor (o, mappObject);
++		mappObject[colColor] = toMappColor(o.getColor(), false);
+     }
+ 
+     private static PathwayElement mapBraceType(String[] mappObject) throws ConverterException
+@@ -691,7 +680,8 @@
+     	PathwayElement o = new PathwayElement(ObjectType.SHAPE);
+     	o.setShapeType (ShapeType.BRACE);
+     	mapShape(o, mappObject);
+-    	mapColor(o, mappObject);
++    	o.setColor(fromMappColor(mappObject[colColor]));
++    	o.setTransparent (true);
+     	o.setOrientation((int)Double.parseDouble(mappObject[colRotation]));
+         return o;          
+     }
+@@ -784,7 +774,7 @@
+     	PathwayElement o = new PathwayElement(ObjectType.LABEL);
+ 
+     	mapShape(o, mappObject);
+-    	mapColor(o, mappObject);
++		o.setColor(fromMappColor(mappObject[colColor]));	
+         
+     	o.setTextLabel(mappObject[colLabel]);
+         
+@@ -821,7 +811,7 @@
+     	mappObject[colLabel] = o.getTextLabel();
+     	
+     	unmapShape(o, mappObject);
+-    	unmapColor(o, mappObject);
++		mappObject[colColor] = toMappColor(o.getColor(), false);
+     	
+     	mappObject[colID] = o.getFontName();
+     	mappObject[colSecondX] = "" + (o.getMFontSize() / 15.0);
+@@ -855,11 +845,12 @@
+         o.setTransparent(i < 0);
+         if (shapeType == ShapeType.ARC)
+         {
+-        	o.setColor(ConvertType.fromMappColor(mappObject[colColor]));
++        	o.setColor(fromMappColor(mappObject[colColor]));
++        	o.setTransparent (true);
+         }
+         else
+         {
+-        	o.setFillColor(ConvertType.fromMappColor(mappObject[colColor]));
++        	o.setFillColor(fromMappColor(mappObject[colColor]));
+         }        
+ 		
+         mapRotation (o, mappObject);        
+@@ -879,11 +870,11 @@
+ 		// line color is discarded for oval and rect
+     	if (shapeType == ShapeType.ARC)
+     	{
+-    		mappObject[colColor] = ConvertType.toMappColor(o.getColor(), o.isTransparent());	
++    		mappObject[colColor] = toMappColor(o.getColor(), false);	
+     	}
+     	else
+     	{
+-    		mappObject[colColor] = ConvertType.toMappColor(o.getFillColor(), o.isTransparent());
++    		mappObject[colColor] = toMappColor(o.getFillColor(), o.isTransparent());
+     	}
+ 		unmapRotation (o, mappObject);    	
+     }
+@@ -892,7 +883,32 @@
+     {
+     	PathwayElement o = new PathwayElement(ObjectType.SHAPE);
+         o.setShapeType(ShapeType.fromMappName(mappObject[colType]));
+-        mapShape (o, mappObject);
++        mapCenter (o, mappObject);
++        
++        switch (o.shapeType)
++        {
++        case CELLA:
++        	o.setRotation (-1.308997);
++        	o.setMWidth(1500);
++        	o.setMHeight(375);
++        	break;
++        case RIBOSOME:
++        	o.setMWidth (600);
++        	o.setMHeight (600);
++        	break;
++        case ORGANA:
++        	o.setMWidth (500);
++        	o.setMHeight (2000);
++        	break;        	
++        case ORGANB:
++        	o.setMWidth (500);
++        	o.setMHeight (2000);
++        	break;        	
++        case ORGANC:
++        	o.setMWidth (600);
++        	o.setMHeight (600);
++        	break;
++        }
+         return o;        
+     }
+ 
+@@ -932,7 +948,10 @@
+     		o.setShapeType(ShapeType.fromMappName(mappObject[colType]));            
+     	}
+         
+-    	mapShape (o, mappObject);
++    	mapCenter(o, mappObject);
++    	double size = Double.parseDouble(mappObject[colWidth]);
++    	o.setMWidth(size);
++    	o.setMHeight(size);
+         mapRotation (o, mappObject);
+         return o;
+     }
+@@ -953,7 +972,17 @@
+ 			mappObject[colSecondY] = "6";  			
+ 		}
+     	
+-    	unmapShape (o, mappObject);
++    	unmapCenter (o, mappObject);
++    	double size = o.getMWidth();
++    	mappObject[colWidth] = "" + size;
++    	if (shapeType == ShapeType.PROTEINB)
++    	{
++    		mappObject[colHeight] = "0";
++    	}
++    	else
++    	{
++    		mappObject[colHeight] = "400";	
++    	}
+         unmapRotation (o, mappObject);
+     }
+     
+@@ -992,5 +1021,29 @@
+ 
+         MappFormat.readFromMapp (inputString, pathway);
+ 	}
++
++    private static Color fromMappColor(String s)
++    {
++    	
++    	int i = Integer.parseInt(s);
++    	
++    	Color result = new Color(
++    			i & 0xFF,
++    			(i & 0xFF00) >> 8,
++    			(i & 0xFF0000) >> 16
++    	);
++    	
++    	return result;
++    }
+     
++    private static String toMappColor(Color rgb, boolean fTransparent)
++    {
++    	if (fTransparent)
++    		return "-1";
++    	else
++    	{
++	    	int c = (rgb.getRed()) + (rgb.getGreen() << 8) + (rgb.getBlue() << 16);
++	    	return "" + c;
++    	}
++    }
+ }
+Index: trunk/src/core/org/pathvisio/model/PathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 1104)
++++ trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 1105)
+@@ -277,6 +277,15 @@
+ 			throw new IllegalArgumentException("Trying to set objectType to "
+ 					+ ot);
+ 		}
++		/* set default value for transparancy */
++		if (ot == ObjectType.LINE || ot == ObjectType.LABEL)
++		{
++			fTransparent = false;
++		}
++		else
++		{
++			fTransparent = true;
++		}
+ 		objectType = ot;
+ 	}
+ 
+@@ -883,23 +892,6 @@
+ 		return objectType;
+ 	}
+ 
+-	/**
+-	 * in the future, change of objecttype won't be possible at all. Objecttype
+-	 * should be set through constructor
+-	 * 
+-	 * @deprecated
+-	 * @param v
+-	 */
+-	public void setObjectType(int v)
+-	{
+-		if (objectType != v)
+-		{
+-			objectType = v;
+-			fireObjectModifiedEvent(new PathwayEvent(this,
+-					PathwayEvent.MODIFIED_GENERAL));
+-		}
+-	}
+-
+ 	// only for lines:
+ 	private MPoint[] defaultPoints = { new MPoint(0, 0), new MPoint(0, 0) };
+ 
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 1104)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 1105)
+@@ -69,9 +69,16 @@
+ 		g.draw(shape);
+ 		
+ 		switch(gdata.getShapeType())
+-		{
+-		case RECTANGLE:
+-		case OVAL:
++		{		
++		case ARC:
++		case BRACE:
++			// don't fill arcs or braces
++			// TODO: this exception should disappear in the future,
++			// when we've made sure all pathways on wikipathways have
++			// transparent arcs and braces
++			break;			
++		default:
++			// fill the rest
+ 			if(!gdata.isTransparent()) {
+ 				g.setColor(fillcolor);
+ 				g.fill(shape);
+Index: trunk/example-data/Shape_test.gpml
+===================================================================
+--- trunk/example-data/Shape_test.gpml	(revision 1104)
++++ trunk/example-data/Shape_test.gpml	(revision 1105)
+@@ -3,38 +3,38 @@
+   <Comment Source="GenMAPP notes"></Comment>
+   <Comment Source="GenMAPP remarks"></Comment>
+   <Graphics BoardWidth="22700.0" BoardHeight="17000.0" WindowWidth="9314.0" WindowHeight="7679.0" />
+-  <Shape Type="ProteinComplex" GraphId="ec8">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="1050.0" CenterY="2650.0" Width="470.5882" Height="0.0" Rotation="0.0" />
++  <Shape Type="ProteinComplex" GraphId="a38">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="1050.0" CenterY="2650.0" Width="470.5882" Height="470.5882" Rotation="0.0" />
+   </Shape>
+-  <Shape Type="OrganA" GraphId="a0f">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="5750.0" CenterY="2900.0" Width="0.0" Height="0.0" Rotation="0.0" />
++  <Shape Type="OrganA" GraphId="bcf">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="5750.0" CenterY="2900.0" Width="500.0" Height="2000.0" Rotation="0.0" />
+   </Shape>
+-  <Shape Type="OrganB" GraphId="ef0">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="7150.0" CenterY="2700.0" Width="0.0" Height="0.0" Rotation="0.0" />
++  <Shape Type="OrganB" GraphId="dbc">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="7150.0" CenterY="2700.0" Width="500.0" Height="2000.0" Rotation="0.0" />
+   </Shape>
+-  <Shape Type="OrganC" GraphId="df7">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="1200.0" CenterY="4500.0" Width="0.0" Height="0.0" Rotation="0.0" />
++  <Shape Type="OrganC" GraphId="c9b">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="1200.0" CenterY="4500.0" Width="600.0" Height="600.0" Rotation="0.0" />
+   </Shape>
+-  <Shape Type="Oval" GraphId="cc6">
++  <Shape Type="Oval" GraphId="afe">
+     <Graphics FillColor="Transparent" Color="000000" CenterX="2600.0" CenterY="1750.0" Width="400.0" Height="200.0" Rotation="5.300392" />
+   </Shape>
+-  <Shape Type="CellA" GraphId="ef9">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="2000.0" CenterY="1000.0" Width="1111.0" Height="375.0" Rotation="0.0" />
++  <Shape Type="CellA" GraphId="e91">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="2000.0" CenterY="1000.0" Width="1500.0" Height="375.0" Rotation="-1.308997" />
+   </Shape>
+-  <Shape Type="Triangle" GraphId="a99">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="4350.0" CenterY="750.0" Width="700.0" Height="400.0" Rotation="0.390607" />
++  <Shape Type="Triangle" GraphId="cba">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="4350.0" CenterY="750.0" Width="700.0" Height="700.0" Rotation="0.390607" />
+   </Shape>
+-  <Shape Type="Pentagon" GraphId="cd5">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="4450.0" CenterY="1850.0" Width="1100.0" Height="400.0" Rotation="0.674741" />
++  <Shape Type="Pentagon" GraphId="ab7">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="4450.0" CenterY="1850.0" Width="1100.0" Height="1100.0" Rotation="0.674741" />
+   </Shape>
+-  <Shape Type="Hexagon" GraphId="bba">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="4350.0" CenterY="3800.0" Width="1100.0" Height="400.0" Rotation="0.6107259" />
++  <Shape Type="Hexagon" GraphId="c73">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="4350.0" CenterY="3800.0" Width="1100.0" Height="1100.0" Rotation="0.6107259" />
+   </Shape>
+-  <Shape Type="Vesicle" GraphId="dbc">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="4300.0" CenterY="3400.0" Width="2450.0" Height="0.0" Rotation="0.6107259" />
++  <Shape Type="Vesicle" GraphId="f57">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="4300.0" CenterY="3400.0" Width="2450.0" Height="2450.0" Rotation="0.6107259" />
+   </Shape>
+-  <Shape Type="Ribosome" GraphId="b67">
+-    <Graphics FillColor="Transparent" Color="000000" CenterX="3200.0" CenterY="1900.0" Width="0.0" Height="0.0" Rotation="0.0" />
++  <Shape Type="Ribosome" GraphId="b3a">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="3200.0" CenterY="1900.0" Width="600.0" Height="600.0" Rotation="0.0" />
+   </Shape>
+   <InfoBox CenterX="0.0" CenterY="0.0" />
+   <Legend CenterX="0.0" CenterY="1701.0" />
+Index: trunk/pathvisio.bat
+===================================================================
+--- trunk/pathvisio.bat	(revision 1104)
++++ trunk/pathvisio.bat	(revision 1105)
+@@ -1,3 +1,4 @@
+-SET MY_CLASS_PATH="lib/JRI.jar";"lib/org.eclipse.equinox.common.jar";"lib/org.eclipse.equinox.supplement.jar";"lib/org.eclipse.jface.jar";"lib/swt-win32.jar";"lib/org.eclipse.core.commands.jar";"lib/jdom.jar";build;"lib/hsqldb.jar";"lib/swt-win32-lib.jar";"lib/resources.jar"
++SET MY_CLASS_PATH="lib/JRI.jar";"lib/org.eclipse.equinox.common.jar";"lib/org.eclipse.equinox.supplement.jar";"lib/org.eclipse.jface.jar";"lib/swt-win32-lib/swt.jar";"lib/org.eclipse.core.commands.jar";"lib/jdom.jar";build/v2;"lib/hsqldb.jar";"lib/swt-win32-lib.jar";"lib/resources.jar";"lib/batik/batik-awt-util.jar";"lib/batik/batik-ext.jar";"lib/batik/batik-script.jar";"lib/batik/batik-util.jar";"lib/batik/batik-dom.jar";"lib/batik/xml-apis.jar";"lib/batik/batik-xml.jar";"lib/batik/batik-extension.jar";"lib/batik/pdf-transcoder.jar";"lib/batik/batik-css.jar";"lib/batik/batik-transcoder.jar";"lib/batik/batik-svg-dom.jar";"lib/batik/batik-parser.jar";"lib/batik/batik-svggen.jar";"lib/batik/batik-bridge.jar";"lib/batik/batik-gvt.jar"
+ 
+-java -cp %MY_CLASS_PATH% gmmlVision.GmmlVisionMain
+\ No newline at end of file
++
++java -cp %MY_CLASS_PATH% org.pathvisio.gui.swt.GuiMain
+\ No newline at end of file

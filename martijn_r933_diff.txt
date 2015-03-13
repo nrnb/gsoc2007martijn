@@ -1,0 +1,330 @@
+Index: trunk/src/core/org/pathvisio/model/PathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 932)
++++ trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 933)
+@@ -262,119 +262,137 @@
+ 			}
+ 		}
+ 	}
+-		
++
++    /**
++	  get all attributes, also the advanced ones
++	*/
+ 	public List<PropertyType> getAttributes()
+ 	{
+-		List<PropertyType> result = Arrays.asList(new PropertyType[] { 
+-				PropertyType.NOTES, 
+-				PropertyType.COMMENT
+-		});
++		return getAttributes(true);
++	}
++
++	/**
++	 get a list of attributes for this PathwayElement.
++	 @param fAdvanced: if true, return all valid attributes. If false, hide certain "advanced" attributes
++	 that can be set in other ways too.
++	 */
++	public List<PropertyType> getAttributes(boolean fAdvanced)
++	{
++		List<PropertyType> result = new ArrayList<PropertyType>();
++		result.add (PropertyType.NOTES); 
++		result.add (PropertyType.COMMENT);
+ 		switch (getObjectType())
+ 		{
+-			case ObjectType.MAPPINFO:
+-				result = ( Arrays.asList (new PropertyType[] {
+-						PropertyType.NOTES, 
+-						PropertyType.COMMENT,
+-						PropertyType.MAPINFONAME,
+-						PropertyType.ORGANISM,
+-						PropertyType.DATA_SOURCE,
+-						PropertyType.VERSION,
+-						PropertyType.AUTHOR,
+-						PropertyType.MAINTAINED_BY,
+-						PropertyType.EMAIL,
+-						PropertyType.LAST_MODIFIED,
+-						PropertyType.AVAILABILITY,
+-						PropertyType.BOARDWIDTH,
+-						PropertyType.BOARDHEIGHT,
+-						PropertyType.WINDOWWIDTH,
+-						PropertyType.WINDOWHEIGHT
+-				}));
+-				break;
+-			case ObjectType.DATANODE:
+-				result = ( Arrays.asList (new PropertyType[] {
+-						PropertyType.NOTES,
+-						PropertyType.COMMENT,
+-						PropertyType.CENTERX,
+-						PropertyType.CENTERY,
+-						PropertyType.WIDTH,
+-						PropertyType.HEIGHT,
+-						PropertyType.COLOR,
+-						PropertyType.GENEID,
+-						PropertyType.SYSTEMCODE,
+-						PropertyType.TEXTLABEL,
+-						//PropertyType.XREF,
+-						PropertyType.BACKPAGEHEAD,
+-						PropertyType.TYPE,
+-						PropertyType.GRAPHID,
+-						PropertyType.GROUPREF,
+-						PropertyType.BIOPAXREF
+-				}));
+-				break;
+-			case ObjectType.SHAPE:
+-				result = ( Arrays.asList(new PropertyType[] {
+-						PropertyType.NOTES,
+-						PropertyType.COMMENT,
+-						PropertyType.CENTERX,
+-						PropertyType.CENTERY,
+-						PropertyType.WIDTH,
+-						PropertyType.HEIGHT,
+-						PropertyType.COLOR,
+-						PropertyType.FILLCOLOR,
+-						PropertyType.SHAPETYPE,
+-						PropertyType.ROTATION,
+-						PropertyType.TRANSPARENT,
+-						PropertyType.GRAPHID,
+-						PropertyType.GROUPREF,
+-						PropertyType.BIOPAXREF
+-				}));
+-				break;
+-			case ObjectType.LINE:
+-				result = ( Arrays.asList(new PropertyType[] {
+-						PropertyType.NOTES,
+-						PropertyType.COMMENT,
+-						PropertyType.COLOR,
+-						PropertyType.STARTX,
+-						PropertyType.STARTY,
+-						PropertyType.ENDX,
+-						PropertyType.ENDY,
+-						PropertyType.LINETYPE,
+-						PropertyType.LINESTYLE,
+-						PropertyType.STARTGRAPHREF,
+-						PropertyType.ENDGRAPHREF,
+-						PropertyType.GRAPHID,
+-						PropertyType.GROUPREF,
+-						PropertyType.BIOPAXREF
+-				}));
+-				break;
+-			case ObjectType.LABEL:
+-				result = ( Arrays.asList(new PropertyType[] {
+-						PropertyType.NOTES,
+-						PropertyType.COMMENT,
+-						PropertyType.XREF,
+-						PropertyType.CENTERX,
+-						PropertyType.CENTERY,
+-						PropertyType.WIDTH,
+-						PropertyType.HEIGHT,
+-						PropertyType.COLOR,
+-						PropertyType.TEXTLABEL,
+-						PropertyType.FONTNAME,
+-						PropertyType.FONTWEIGHT,
+-						PropertyType.FONTSTYLE,
+-						PropertyType.FONTSIZE,
+-						PropertyType.GRAPHID,
+-						PropertyType.GROUPREF,
+-						PropertyType.BIOPAXREF
+-				}));
+-				break;
+-			case ObjectType.GROUP:
+-				result = ( Arrays.asList(new PropertyType[] {
+-						PropertyType.GROUPID,
+-						PropertyType.GROUPREF,
+-						PropertyType.TEXTLABEL,
+-						PropertyType.BIOPAXREF
+-				}));
+-				break;
+-				
++		case ObjectType.MAPPINFO:				
++			result.add (PropertyType.NOTES);
++			result.add (PropertyType.COMMENT);
++			result.add (PropertyType.MAPINFONAME);
++			result.add (PropertyType.ORGANISM);
++			result.add (PropertyType.DATA_SOURCE);
++			result.add (PropertyType.VERSION);
++			result.add (PropertyType.AUTHOR);
++			result.add (PropertyType.MAINTAINED_BY);
++			result.add (PropertyType.EMAIL);
++			result.add (PropertyType.LAST_MODIFIED);
++			result.add (PropertyType.AVAILABILITY);
++			result.add (PropertyType.BOARDWIDTH);
++			result.add (PropertyType.BOARDHEIGHT);
++			//if (Engine.getPreferences().getBoolean(Preferences.PREF_SHOW_ADVANCED_ATTR))
++			if (fAdvanced)
++			{// these two properties are deprecated and not used in PathVisio itself.
++				result.add (PropertyType.WINDOWWIDTH);
++				result.add (PropertyType.WINDOWHEIGHT);
++			}
++			break;
++		case ObjectType.DATANODE:
++			result.add (PropertyType.NOTES);
++			result.add (PropertyType.COMMENT);
++			result.add (PropertyType.CENTERX);
++			result.add (PropertyType.CENTERY);
++			result.add (PropertyType.WIDTH);
++			result.add (PropertyType.HEIGHT);
++			result.add (PropertyType.COLOR);
++			result.add (PropertyType.GENEID);
++			result.add (PropertyType.SYSTEMCODE);
++			result.add (PropertyType.TEXTLABEL);
++			//PropertyType.XREF,
++			result.add (PropertyType.BACKPAGEHEAD);
++			result.add (PropertyType.TYPE);
++			if (fAdvanced)
++			{
++				result.add (PropertyType.GRAPHID);
++				result.add (PropertyType.GROUPREF);			
++				result.add (PropertyType.BIOPAXREF);
++			}
++			break;
++		case ObjectType.SHAPE:
++			result.add (PropertyType.NOTES);
++			result.add (PropertyType.COMMENT);
++			result.add (PropertyType.CENTERX);
++			result.add (PropertyType.CENTERY);
++			result.add (PropertyType.WIDTH);
++			result.add (PropertyType.HEIGHT);
++			result.add (PropertyType.COLOR);
++			result.add (PropertyType.FILLCOLOR);
++			result.add (PropertyType.SHAPETYPE);
++			result.add (PropertyType.ROTATION);
++			result.add (PropertyType.TRANSPARENT);
++			if (fAdvanced)
++			{
++				result.add (PropertyType.GRAPHID);
++				result.add (PropertyType.GROUPREF);			
++				result.add (PropertyType.BIOPAXREF);
++			}
++			break;
++		case ObjectType.LINE:
++			result.add (PropertyType.NOTES);
++			result.add (PropertyType.COMMENT);
++			result.add (PropertyType.COLOR);
++			result.add (PropertyType.STARTX);
++			result.add (PropertyType.STARTY);
++			result.add (PropertyType.ENDX);
++			result.add (PropertyType.ENDY);
++			result.add (PropertyType.LINETYPE);
++			result.add (PropertyType.LINESTYLE);
++			result.add (PropertyType.STARTGRAPHREF);
++			result.add (PropertyType.ENDGRAPHREF);
++			if (fAdvanced)
++			{
++				result.add (PropertyType.GRAPHID);
++				result.add (PropertyType.GROUPREF);			
++				result.add (PropertyType.BIOPAXREF);
++			}
++			break;
++		case ObjectType.LABEL:
++			result.add (PropertyType.NOTES);
++			result.add (PropertyType.COMMENT);
++			result.add (PropertyType.XREF);
++			result.add (PropertyType.CENTERX);
++			result.add (PropertyType.CENTERY);
++			result.add (PropertyType.WIDTH);
++			result.add (PropertyType.HEIGHT);
++			result.add (PropertyType.COLOR);
++			result.add (PropertyType.TEXTLABEL);
++			result.add (PropertyType.FONTNAME);
++			result.add (PropertyType.FONTWEIGHT);
++			result.add (PropertyType.FONTSTYLE);
++			result.add (PropertyType.FONTSIZE);
++			if (fAdvanced)
++			{
++				result.add (PropertyType.GRAPHID);
++				result.add (PropertyType.GROUPREF);			
++				result.add (PropertyType.BIOPAXREF);
++			}
++			break;
++		case ObjectType.GROUP:
++			if (fAdvanced)
++			{
++				result.add (PropertyType.GROUPID);
++				result.add (PropertyType.GROUPREF);			
++				result.add (PropertyType.BIOPAXREF);
++			}
++			result.add (PropertyType.TEXTLABEL);
++			break;
+ 		}
+ 		return result;
+ 	}
+Index: trunk/src/core/org/pathvisio/preferences/Preferences.java
+===================================================================
+--- trunk/src/core/org/pathvisio/preferences/Preferences.java	(revision 932)
++++ trunk/src/core/org/pathvisio/preferences/Preferences.java	(revision 933)
+@@ -64,6 +64,7 @@
+ 		setDefault(PREF_DIR_GDB, DIR_GDBFILES);
+ 		setDefault(PREF_DIR_EXPR, DIR_EXPRFILES);
+ 		setDefault(PREF_DIR_RDATA, DIR_RDATAFILES);
++		setDefault(PREF_SHOW_ADVANCED_ATTR, SHOW_ADVANCED_ATTR);
+ 		
+ 		try {
+ 			load();
+@@ -138,7 +139,9 @@
+ 	public static final String PREF_CURR_GDB = "currentGdb";
+ 	public static final String PREF_DB_ENGINE_GDB = "dbengine.gdb";
+ 	public static final String PREF_DB_ENGINE_EXPR = "dbengine.expr";
+-	public static final String PREF_SIDEPANEL_SIZE = "display.sidePanelSize";	
++	public static final String PREF_SIDEPANEL_SIZE = "display.sidePanelSize";
++
++	public static final String PREF_SHOW_ADVANCED_ATTR = "display.showAdvancedAttr";
+ 	
+ 	// Defaults
+ 	//> display
+@@ -164,4 +167,6 @@
+ 	static final String DIR_GDBFILES = new File(Engine.getDataDir().toString(), "gene databases").toString();
+ 	static final String DIR_EXPRFILES = new File(Engine.getDataDir().toString(), "expression datasets").toString();
+ 	static final String DIR_RDATAFILES = new File(Engine.getDataDir().toString(), "R data").toString();
++
++	static final boolean SHOW_ADVANCED_ATTR = false;
+ }
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java
+===================================================================
+--- trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java	(revision 932)
++++ trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java	(revision 933)
+@@ -21,6 +21,7 @@
+ import org.eclipse.jface.preference.FieldEditorPreferencePage;
+ import org.eclipse.jface.preference.FileFieldEditor;
+ import org.eclipse.jface.preference.IntegerFieldEditor;
++import org.eclipse.jface.preference.BooleanFieldEditor;
+ import org.eclipse.jface.preference.PreferenceManager;
+ import org.eclipse.jface.preference.PreferenceNode;
+ import org.eclipse.jface.preference.StringFieldEditor;
+@@ -93,7 +94,11 @@
+ 					"Initial side panel size (percent of window size):", getFieldEditorParent());
+ 			f.setValidRange(0, 100);
+ 			addField(f);
+-			
++
++			BooleanFieldEditor f2 =	new BooleanFieldEditor (
++				Preferences.PREF_SHOW_ADVANCED_ATTR,									   
++				"Show advanced attributes (e.g. references):", getFieldEditorParent());
++			addField (f2);
+ 		}
+ 	}
+ 	private class ColorsPage extends FieldEditorPreferencePage {
+Index: trunk/src/core/org/pathvisio/gui/PropertyPanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/PropertyPanel.java	(revision 932)
++++ trunk/src/core/org/pathvisio/gui/PropertyPanel.java	(revision 933)
+@@ -61,6 +61,7 @@
+ import org.pathvisio.view.SelectionBox;
+ import org.pathvisio.view.SelectionBox.SelectionEvent;
+ import org.pathvisio.view.SelectionBox.SelectionListener;
++import org.pathvisio.preferences.Preferences;
+ 
+ /**
+  * This class implements the sidepanel where you can edit graphical properties
+@@ -163,7 +164,9 @@
+ 		HashMap<PropertyType, Integer> master = new HashMap<PropertyType, Integer>();
+ 		for (PathwayElement o : dataObjects)
+ 		{
+-			for (PropertyType attr : o.getAttributes())
++			// get attributes. Only get advanced attributes if the preferences say so.
++			for (PropertyType attr : o.getAttributes(
++					 Engine.getPreferences().getBoolean(Preferences.PREF_SHOW_ADVANCED_ATTR)))
+ 			{
+ 				if (master.containsKey(attr))
+ 				{

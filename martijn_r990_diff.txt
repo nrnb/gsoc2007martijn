@@ -1,0 +1,456 @@
+Index: trunk/src/swing/org/pathvisio/gui/swing/dialogs/DataNodeDialog.java
+===================================================================
+--- trunk/src/swing/org/pathvisio/gui/swing/dialogs/DataNodeDialog.java	(revision 989)
++++ trunk/src/swing/org/pathvisio/gui/swing/dialogs/DataNodeDialog.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.pathvisio.gui.swing.dialogs;
+ 
+ import java.awt.Component;
+Index: trunk/src/swing/org/pathvisio/gui/swing/dialogs/PathwayElementDialog.java
+===================================================================
+--- trunk/src/swing/org/pathvisio/gui/swing/dialogs/PathwayElementDialog.java	(revision 989)
++++ trunk/src/swing/org/pathvisio/gui/swing/dialogs/PathwayElementDialog.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.pathvisio.gui.swing.dialogs;
+ 
+ import java.awt.BorderLayout;
+Index: trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ /** Interface which must be implmented by any class that wants to pose as the call-back handler for R event loop callbacks. It is legal to return immediately except when user interaction is required: @link{#rReadConsole} and @link{#rChooseFile} are expected to block until the user performs the desired action. */
+Index: trunk/tools/GmmlVisio2R/JRI/RFactor.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RFactor.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RFactor.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ // JRclient library - client interface to Rserve, see http://www.rosuda.org/Rserve/
+Index: trunk/tools/GmmlVisio2R/JRI/Mutex.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/Mutex.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/Mutex.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ /** This class implements a (not so) simple mutex. The initial state of the mutex is unlocked. */
+Index: trunk/tools/GmmlVisio2R/JRI/RBool.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RBool.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RBool.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ // JRclient library - client interface to Rserve, see http://www.rosuda.org/Rserve/
+Index: trunk/tools/GmmlVisio2R/JRI/REXP.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/REXP.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/REXP.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ import java.util.Vector;
+Index: trunk/tools/GmmlVisio2R/JRI/tools/getsp.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/tools/getsp.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/tools/getsp.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ public class getsp {
+     public static void main(String[] args) {
+ 	if (args!=null && args.length>0) {
+Index: trunk/tools/GmmlVisio2R/JRI/RConsoleOutputStream.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RConsoleOutputStream.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RConsoleOutputStream.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ // RConsoleOutputStream, part of Java/R Interface
+ //
+ // (C)Copyright 2007 Simon Urbanek
+Index: trunk/tools/GmmlVisio2R/JRI/RVector.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RVector.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RVector.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ import java.util.Vector;
+Index: trunk/tools/GmmlVisio2R/JRI/Rengine.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/Rengine.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/Rengine.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ import java.lang.*;
+Index: trunk/tools/GmmlVisio2R/JRI/RList.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RList.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/RList.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ package org.rosuda.JRI;
+ 
+ // JRclient library - client interface to Rserve, see http://www.rosuda.org/Rserve/
+Index: trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIClassLoader.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIClassLoader.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIClassLoader.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.net.URLClassLoader;
+ import java.net.URL;
+ import java.util.HashMap;
+Index: trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIBootstrap.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIBootstrap.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/bootstrap/JRIBootstrap.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.io.File;
+ import java.io.PrintStream;
+ import java.io.FileOutputStream;
+Index: trunk/tools/GmmlVisio2R/JRI/bootstrap/Boot.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/bootstrap/Boot.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/bootstrap/Boot.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.io.File;
+ import java.io.InputStream;
+ import java.io.FileOutputStream;
+Index: trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedClassLoader.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedClassLoader.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedClassLoader.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.net.URL;
+ 
+ public interface DelegatedClassLoader {
+Index: trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedURLClassLoader.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedURLClassLoader.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/bootstrap/DelegatedURLClassLoader.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ /* An extension of URLClassLoader that implements DelegatedClassLoader */
+ 
+ import java.net.URL;
+Index: trunk/tools/GmmlVisio2R/JRI/examples/rtest.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/examples/rtest.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/examples/rtest.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.io.*;
+ import java.awt.Frame;
+ import java.awt.FileDialog;
+Index: trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java	(revision 989)
++++ trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java	(revision 990)
+@@ -1,3 +1,19 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
+ import java.io.*;
+ 
+ import java.awt.*;

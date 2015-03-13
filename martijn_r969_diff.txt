@@ -1,0 +1,396 @@
+Index: trunk/src/core/org/pathvisio/Revision.java
+===================================================================
+--- trunk/src/core/org/pathvisio/Revision.java	(revision 968)
++++ trunk/src/core/org/pathvisio/Revision.java	(revision 969)
+@@ -1,7 +0,0 @@
+-
+-package org.pathvisio;
+-
+-public class Revision 
+-{
+-	public static final String REVISION = "964:966M";
+-};
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 968)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 969)
+@@ -487,26 +487,47 @@
+ 	 */
+ 	public void mouseDoubleClick(MouseEvent e) {	}
+ 
+-	public void draw(Graphics2D g2d) {
+-		draw(g2d, null);
++	public void draw (Graphics2D g2d)
++	{
++		draw (g2d, null, true);
+ 	}
++
++	public void draw (Graphics2D g2d, Rectangle area)
++	{
++		draw (g2d, area, true);
++	}
+ 	
+ 	/**
+-	 * Paints all components in the drawing.
+-	 * This method is called automatically in the 
+-	 * painting process
++	 Paints all components in the drawing.
++	 This method is called automatically in the 
++	 painting process
++
++	 @param g2d Graphics2D object the pathway should be drawn onto
++	 @param area area that should be updated, null if you want to update the entire pathway
++	 @param erase true if the background should be erased
+ 	 */
+-	public void draw (Graphics2D g2d, Rectangle area)
++	public void draw (Graphics2D g2d, Rectangle area, boolean erase)
+ 	{		
+-		if(area == null) {
++		if(area == null)
++		{
+ 			area = g2d.getClipBounds();
++			if (area == null)
++			{
++				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
++				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
++				area = new Rectangle (0, 0, width, height);
++			}
+ 		}
+ 		
+ 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+ 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
++
++		if (erase)
++		{
++			g2d.setColor(java.awt.Color.WHITE);
++			g2d.fillRect(area.x, area.y, area.width, area.height);
++		}
+ 		
+-		g2d.setColor(java.awt.Color.WHITE);
+-		g2d.fillRect(area.x, area.y, area.width, area.height);
+ 		g2d.setColor(java.awt.Color.BLACK);
+ 		Collections.sort(drawingObjects);
+ 		
+Index: trunk/tools/gpmldiff/.classpath
+===================================================================
+--- trunk/tools/gpmldiff/.classpath	(revision 968)
++++ trunk/tools/gpmldiff/.classpath	(revision 969)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<classpath>
+-	<classpathentry kind="src" path="src"/>
+-	<classpathentry kind="lib" path="lib/jdom.jar"/>
+-	<classpathentry kind="lib" path="lib/junit.jar"/>
+-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+-	<classpathentry kind="output" path="build"/>
+-</classpath>
+Index: trunk/tools/gpmldiff/.project
+===================================================================
+--- trunk/tools/gpmldiff/.project	(revision 968)
++++ trunk/tools/gpmldiff/.project	(revision 969)
+@@ -1,17 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<projectDescription>
+-	<name>GpmlDiff</name>
+-	<comment></comment>
+-	<projects>
+-	</projects>
+-	<buildSpec>
+-		<buildCommand>
+-			<name>org.eclipse.jdt.core.javabuilder</name>
+-			<arguments>
+-			</arguments>
+-		</buildCommand>
+-	</buildSpec>
+-	<natures>
+-		<nature>org.eclipse.jdt.core.javanature</nature>
+-	</natures>
+-</projectDescription>
+Index: trunk/tools/gpmldiff/gpmldiff.sh
+===================================================================
+--- trunk/tools/gpmldiff/gpmldiff.sh	(revision 968)
++++ trunk/tools/gpmldiff/gpmldiff.sh	(revision 969)
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ MYCLASSPATH=\
+ build:\
+-./lib/jdom.jar
++../../lib/jdom.jar
+ 
+ java -cp $MYCLASSPATH org.pathvisio.gpmldiff.GpmlDiff $1 $2
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 0)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 969)
+@@ -0,0 +1,73 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.gpmldiff;
++
++import java.awt.*;
++import java.io.*;
++import org.apache.batik.svggen.SVGGraphics2D;
++import org.apache.batik.dom.GenericDOMImplementation;
++import java.awt.AlphaComposite;
++import org.w3c.dom.Document;
++import org.w3c.dom.DOMImplementation;
++import org.pathvisio.view.VPathway;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.ConverterException;
++
++class SvgMain
++{
++	public void paint (Graphics2D g2d)
++	{
++		g2d.setPaint (Color.red);
++		g2d.fill (new Rectangle (10, 10, 100, 100));
++	}
++	
++	static public void main (String argv[]) throws IOException, ConverterException
++	{
++		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
++		String svgNS = "http://www.w3.org/2000/svg";
++		Document document = domImpl.createDocument (svgNS, "svg", null);
++		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
++
++//		SvgMain svgMain = new SvgMain();
++//		svgMain.paint(svgGenerator);
++
++		Pathway pwy[] = {new Pathway(), new Pathway()};
++		
++		pwy[0].readFromXml (new File ("testcases/Simple1.1.gpml"), false);
++		pwy[1].readFromXml (new File ("testcases/Simple1.2.gpml"), false);
++
++		
++		VPathway vpwy[] = {new VPathway(null), new VPathway(null)};
++
++		for (int i = 0; i < 2; ++i)
++		{
++			vpwy[i].fromGmmlData(pwy[i]);
++		}
++		
++		vpwy[0].draw (svgGenerator, null, false);
++ 		AlphaComposite ac = AlphaComposite.getInstance (AlphaComposite.SRC_OVER, 1.0f);
++ 		svgGenerator.setComposite (ac);
++		svgGenerator.setColor (new Color (0.0f, 1.0f, 1.0f, 0.5f));
++		svgGenerator.fillRect (0,0,500,500);
++	// 	svgGenerator.translate (10, 10);
++// 		vpwy[1].draw (svgGenerator, null, false);
++		
++		boolean useCSS = true;
++		Writer out = new OutputStreamWriter (System.out, "UTF-8");
++		svgGenerator.stream (out, useCSS);
++	}
++}
+
+Property changes on: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/tools/gpmldiff/svg.sh
+===================================================================
+--- trunk/tools/gpmldiff/svg.sh	(revision 0)
++++ trunk/tools/gpmldiff/svg.sh	(revision 969)
+@@ -0,0 +1,31 @@
++#!/bin/sh
++MYCLASSPATH=\
++build:\
++../../lib/BrowserLauncher.jar:\
++../../lib/batik/batik-awt-util.jar:\
++../../lib/batik/batik-bridge.jar:\
++../../lib/batik/batik-css.jar:\
++../../lib/batik/batik-dom.jar:\
++../../lib/batik/batik-ext.jar:\
++../../lib/batik/batik-extension.jar:\
++../../lib/batik/batik-gvt.jar:\
++../../lib/batik/batik-parser.jar:\
++../../lib/batik/batik-script.jar:\
++../../lib/batik/batik-svg-dom.jar:\
++../../lib/batik/batik-svggen.jar:\
++../../lib/batik/batik-transcoder.jar:\
++../../lib/batik/batik-util.jar:\
++../../lib/batik/batik-xml.jar:\
++../../lib/batik/pdf-transcoder.jar:\
++../../lib/batik/xml-apis.jar:\
++../../lib/derby.jar:\
++../../lib/jdom.jar:\
++../../lib/org.eclipse.core.commands.jar:\
++../../lib/org.eclipse.equinox.common.jar:\
++../../lib/org.eclipse.equinox.supplement.jar:\
++../../lib/org.eclipse.jface.jar:\
++../../lib/resources.jar:\
++../../lib/swt-linux-lib/swt.jar:\
++../../lib/swt-linux-lib.jar
++
++java -cp $MYCLASSPATH org.pathvisio.gpmldiff.SvgMain
+\ No newline at end of file
+
+Property changes on: trunk/tools/gpmldiff/svg.sh
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+Name: svn:executable
+   + *
+
+Index: trunk/tools/gpmldiff/build.xml
+===================================================================
+--- trunk/tools/gpmldiff/build.xml	(revision 968)
++++ trunk/tools/gpmldiff/build.xml	(revision 969)
+@@ -1,4 +1,3 @@
+-<<<<<<< .working
+ <?xml version="1.0"?>
+ <project name="GpmlDiff" default="compile" basedir=".">
+ 	
+@@ -6,79 +5,9 @@
+ 	<property name="build.dir" value="build"/>
+ 
+     <property name="apidoc.dir" value="apidoc"/>
+-	<property name="lib.dir" value="lib"/>
+ 	
+ 	<path id="project.class.path">
+ 		<pathelement location="${build.dir}"/>
+-		<fileset dir="lib">
+-		        <include name="**/*.jar"/>
+-		</fileset>
+-	</path>
+-
+-	<target name="prepare">
+-		<mkdir dir="${build.dir}"/>
+-		<mkdir dir="${apidoc.dir}"/>	
+-	</target>
+-	
+-	<target name="clean" description="Remove all generated files.">
+-		<delete dir="${build.dir}"/>
+-		<delete dir="${apidoc.dir}"/>
+-	</target>
+-	
+-	<target name="compile" depends="prepare" description="Compile all sources">
+-		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
+-			<classpath refid="project.class.path"/>
+-		</javac>
+-	</target>
+-	
+-	<target name="jar" depends="compile" description="Generates executable jar file">
+-		<jar jarfile="gpmldiff.jar" manifest="src/MANIFEST.MF">
+-			<fileset dir="${build.dir}" includes="**/*.class"/>			
+-		</jar>
+-    </target>
+-	
+-	<target name="docs" depends="prepare" description="generate api-docs">
+-		<tstamp /> <!-- set ${TODAY} -->
+-		<javadoc destdir="${apidoc.dir}" 
+-			doctitle="PathVisio"
+-			footer="Generated ${TODAY}">
+-			<classpath refid="project.class.path"/>
+-			<package name="org.pathvisio.gpmldiff"/>
+-			<sourcepath>			
+-				<pathelement location="${src.dir}"/>
+-			</sourcepath>
+-		</javadoc>		
+-	</target>
+-		
+-	<target name="test" depends="compile">
+-		<javac srcdir="src"
+-					includes="src/**"
+-					destdir="${build.dir}">
+-					<classpath refid="project.class.path"/>
+-		</javac>
+-		<junit printsummary="on" haltonfailure="true" fork="true">
+-			<formatter type="brief" usefile="false"/>
+-			<classpath refid="project.class.path"/>
+-			<batchtest>
+-				<fileset dir="src">
+-					<include name="**/Test.java"/>
+-				</fileset>
+-			</batchtest>
+-		</junit>
+-	</target>
+-	
+-</project>
+-=======
+-<?xml version="1.0"?>
+-<project name="GpmlDiff" default="compile" basedir=".">
+-	
+-	<property name="src.dir" value="src"/>        
+-	<property name="build.dir" value="build"/>
+-
+-    <property name="apidoc.dir" value="apidoc"/>
+-	
+-	<path id="project.class.path">
+-		<pathelement location="${build.dir}"/>
+ 		<fileset dir="../../lib">
+ 		        <include name="**/*.jar"/>
+ 		</fileset>
+@@ -94,29 +23,43 @@
+ 		<delete dir="${apidoc.dir}"/>
+ 	</target>
+ 	
+-	<target name="compile" depends="prepare" description="Compile all sources">
++	<target name="compile-soft" depends="prepare" description="Compile only modified sources">
+ 		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
+ 			<classpath refid="project.class.path"/>
+ 		</javac>
+-		<!--
+-		<javac srcdir="../../src/"
+-			   includes="core/**,v2/**"
++		<javac srcdir="../../src/core"
++			   includes="**"
+ 			   destdir="${build.dir}">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
+-		!-->
+-		<javac srcdir="../../src/core"
++		<javac srcdir="../../src/v2"
+ 			   includes="**"
+ 			   destdir="${build.dir}">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
+-		<javac srcdir="../../src/v2"
++		<javac srcdir="../../src/swt"
+ 			   includes="**"
+ 			   destdir="${build.dir}">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
++		<javac srcdir="../../src/swing"
++			   includes="**"
++			   destdir="${build.dir}">
++		  <classpath refid="project.class.path"/>
++		</javac>
+ 	</target>
+-	
++
++	<target name="compile" depends="prepare" description="Compile all sources">
++		<javac srcdir="../../src/"
++			   includes="core/**,v2/**,swing/**,swt/**"
++			   destdir="${build.dir}">
++		  <classpath refid="project.class.path"/>
++		</javac>
++		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
++			<classpath refid="project.class.path"/>
++		</javac>
++	</target>
++
+ 	<target name="jar" depends="compile" description="Generates executable jar file">
+ 		<jar jarfile="gpmldiff.jar" manifest="src/MANIFEST.MF">
+ 			<fileset dir="${build.dir}" includes="**/*.class"/>			
+@@ -154,4 +97,3 @@
+ 	</target>
+ 	
+ </project>
+->>>>>>> .merge-right.r956

@@ -1,0 +1,64 @@
+Index: trunk/lib/batik/batik-svg-dom.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-extension.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-util.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-dom.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/pdf-transcoder.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-css.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-svggen.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-parser.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-bridge.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-xml.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-gvt.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-ext.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/xml-apis.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-transcoder.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-script.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: trunk/lib/batik/batik-awt-util.jar
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream

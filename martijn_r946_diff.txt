@@ -1,0 +1,13 @@
+Index: trunk/src/v1/org/pathvisio/Globals.java
+===================================================================
+--- trunk/src/v1/org/pathvisio/Globals.java	(revision 945)
++++ trunk/src/v1/org/pathvisio/Globals.java	(revision 946)
+@@ -24,7 +24,7 @@
+  */
+ public class Globals {
+ 	public static final String APPLICATION_NAME = "PathVisio";
+-	public static final String APPLICATION_VERSION_NAME = "PathVisio 1.0 release candidate 1";
++	public static final String APPLICATION_VERSION_NAME = "PathVisio 1.0 release candidate 2";
+ 	public static final String HELP_URL = "http://wiki.bigcat.unimaas.nl/pathvisio/Help";
+ 	public static final boolean fUseExperimentalFeatures = false;
+ }

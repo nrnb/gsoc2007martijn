@@ -1,0 +1,931 @@
+Index: trunk/pathvisio.sh
+===================================================================
+--- trunk/pathvisio.sh	(revision 922)
++++ trunk/pathvisio.sh	(revision 923)
+@@ -1,4 +1,34 @@
+ #!/bin/sh
+ export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox
+ export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-java -cp lib/JRI.jar:lib/BrowserLauncher.jar:lib/org.eclipse.equinox.common.jar:lib/org.eclipse.equinox.supplement.jar:lib/org.eclipse.jface.jar:lib/swt-linux-lib/swt.jar:lib/org.eclipse.core.commands.jar:lib/jdom.jar:build/v1:lib/derby.jar:lib/swt-linux-lib.jar:lib/resources.jar -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.GuiMain 
++
++MYCLASSPATH=lib/JRI.jar:\
++lib/BrowserLauncher.jar:\
++lib/org.eclipse.equinox.common.jar:\
++lib/org.eclipse.equinox.supplement.jar:\
++lib/org.eclipse.jface.jar:\
++lib/swt-linux-lib/swt.jar:\
++lib/org.eclipse.core.commands.jar:\
++lib/jdom.jar:\
++build/v1:\
++lib/derby.jar:\
++lib/swt-linux-lib.jar:\
++lib/resources.jar:\
++lib/batik/batik-awt-util.jar:\
++lib/batik/batik-ext.jar:\
++lib/batik/batik-script.jar:\
++lib/batik/batik-util.jar:\
++lib/batik/batik-dom.jar:\
++lib/batik/xml-apis.jar:\
++lib/batik/batik-xml.jar:\
++lib/batik/batik-extension.jar:\
++lib/batik/pdf-transcoder.jar:\
++lib/batik/batik-css.jar:\
++lib/batik/batik-transcoder.jar:\
++lib/batik/batik-svg-dom.jar:\
++lib/batik/batik-parser.jar:\
++lib/batik/batik-svggen.jar:\
++lib/batik/batik-bridge.jar:\
++lib/batik/batik-gvt.jar
++
++java -cp $MYCLASSPATH -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.GuiMain 
+Index: trunk/CLASSPATH
+===================================================================
+--- trunk/CLASSPATH	(revision 922)
++++ trunk/CLASSPATH	(revision 923)
+@@ -6,7 +6,7 @@
+ lib/swt-linux-lib/swt.jar
+ lib/org.eclipse.core.commands.jar
+ lib/jdom.jar
+-build/v1
++build/v2
+ lib/derby.jar
+ lib/swt-linux-lib.jar
+ lib/resources.jar
+Index: trunk/src/v1/org/pathvisio/gui/MainWindow.java
+===================================================================
+--- trunk/src/v1/org/pathvisio/gui/MainWindow.java	(revision 922)
++++ trunk/src/v1/org/pathvisio/gui/MainWindow.java	(revision 923)
+@@ -530,8 +530,16 @@
+ 	}
+ 	
+ //	KH end
+-	
++
+ 	/**
++	   Invoked when user tries to close window
++	*/
++	protected boolean canHandleShellCloseEvent()
++	{
++		return Engine.canDiscardPathway();
++	}
++
++	/**
+ 	 * Creates element of the coolbar containing controls related to viewing a VPathway
+ 	 */
+ 	protected void createViewActionsCI()
+@@ -687,7 +695,7 @@
+ 		shell.setSize(800, 600);
+ 		shell.setLocation(100, 100);
+ 		
+-		shell.setText(Globals.APPLICATION_VERSION_NAME);
++//		shell.setText(Globals.APPLICATION_VERSION_NAME);
+ 		
+ 		GuiMain.loadImages(shell.getDisplay());
+ 		
+@@ -725,7 +733,9 @@
+ 		rightPanel.hideTab("Legend"); //hide legend on startup
+ 		
+ 		setStatus("Using Gene Database: '" + Engine.getPreferences().getString(Preferences.PREF_CURR_GDB) + "'");
+-				
++
++		Engine.updateTitle();
++		
+ 		return parent;
+ 		
+ 	};
+Index: trunk/src/v2/org/pathvisio/gui/MainWindow.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/gui/MainWindow.java	(revision 922)
++++ trunk/src/v2/org/pathvisio/gui/MainWindow.java	(revision 923)
+@@ -116,6 +116,7 @@
+ 		 */
+ 		public NewElementAction (int e)
+ 		{
++			// TODO: this should be moved to CommonActions, since it is both in v1 and v2
+ 			element = e;
+ 		
+ 			String toolTipText;
+@@ -602,12 +603,6 @@
+ 	}
+ 	private VisualizationDialogAction visualizationDialogAction = new VisualizationDialogAction(this);
+ 	
+-	public static void openHelp() throws Exception {
+-		BrowserLauncher bl = new BrowserLauncher(null);
+-		bl.openURLinBrowser(Globals.HELP_URL);
+-	}
+-			
+-
+ 	/**
+ 	 * {@link Action} to open the pathway statistics wizard
+ 	 */
+@@ -988,8 +983,6 @@
+ 		shell.setSize(800, 600);
+ 		shell.setLocation(100, 100);
+ 		
+-		shell.setText(Globals.APPLICATION_VERSION_NAME);
+-		
+ 		GuiMain.loadImages(shell.getDisplay());
+ 		
+ 		shell.setImage(Engine.getImageRegistry().get("shell.icon"));
+@@ -1026,10 +1019,20 @@
+ 		rightPanel.hideTab("Legend"); //hide legend on startup
+ 		
+ 		setStatus("Using Gene Database: '" + Engine.getPreferences().getString(Preferences.PREF_CURR_GDB) + "'");
+-				
++
++		Engine.updateTitle();
++		
+ 		return parent;
+ 		
+ 	};
++
++	/**
++	   Invoked when user tries to close window
++	 */
++	protected boolean canHandleShellCloseEvent()
++	{
++		return Engine.canDiscardPathway();
++	}
+ 	
+ 	public TabbedSidePanel getSidePanel() { return rightPanel; }
+ 	
+Index: trunk/src/core/org/pathvisio/gui/Engine.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/Engine.java	(revision 922)
++++ trunk/src/core/org/pathvisio/gui/Engine.java	(revision 923)
+@@ -26,6 +26,7 @@
+ 
+ import org.eclipse.core.runtime.IProgressMonitor;
+ import org.eclipse.jface.dialogs.MessageDialog;
++import org.eclipse.jface.dialogs.IDialogConstants;
+ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+ import org.eclipse.jface.preference.PreferenceStore;
+ import org.eclipse.jface.resource.ImageRegistry;
+@@ -34,6 +35,8 @@
+ import org.eclipse.swt.graphics.RGB;
+ import org.eclipse.swt.widgets.Display;
+ import org.eclipse.swt.widgets.Shell;
++import org.eclipse.swt.widgets.FileDialog;
++import org.eclipse.swt.SWT;
+ import org.pathvisio.Globals;
+ import org.pathvisio.data.DBConnector;
+ import org.pathvisio.debug.Logger;
+@@ -53,7 +56,11 @@
+ import edu.stanford.ejalbert.exception.UnsupportedOperatingSystemException;
+ 
+ /**
+- * This class contains the essential parts of the program: the window, drawing and gpml data
++ This class contains the essential parts of the program: the window, drawing and gpml data
++ It takes care of some basic Document handling facilities such as:
++ - creating a new document
++ - load / save / save as
++ - asking if a changed file should be saved before closing
+  */
+ public abstract class Engine {
+ 	public static final String SVG_FILE_EXTENSION = "svg";
+@@ -73,9 +80,9 @@
+ 	 * and handle gpml related actions
+ 	 */
+ 	
+-	static MainWindow window;
+-	static VPathway vPathway;
+-	static Pathway pathway;
++	private static MainWindow window;
++	private static VPathway vPathway;
++	private static Pathway pathway;
+ 	
+ 	private static ImageRegistry imageRegistry;
+ 	private static Preferences preferences;
+@@ -92,6 +99,30 @@
+ 		if(window == null) window = new MainWindow();
+ 		return window;
+ 	}
++
++	/**
++	   Updates the title of the main window.
++	   Call at initialization of the program,
++	   whenever the filename of the current document has changed,
++	   or the change status has changed.
++	*/
++	public static void updateTitle()
++	{
++		if (pathway == null)
++		{
++			window.getShell().setText(Globals.APPLICATION_VERSION_NAME);
++		}
++		else
++		{
++			// get filename, or (New Pathway) if current pathway hasn't been opened yet
++			String fname = (pathway.getSourceFile() == null) ? "(New Pathway)" :
++				pathway.getSourceFile().getName();
++			window.getShell().setText(
++				"*" + fname + " - " +
++				Globals.APPLICATION_VERSION_NAME
++				);
++		}
++	}
+ 	
+ 	/**
+ 	 * Initiates an instance of {@link MainWindow} that is monitored by Sleak.java,
+@@ -167,29 +198,32 @@
+ 	public static List<PathwayElement> clipboard = null;
+ 	
+ 	/**
+-	 * Open a pathway from a gpml file
++	 Open a pathway from a gpml file
++	 Asks the user if the old pathway should be discarded, if necessary
+ 	 */
+ 	public static void openPathway(String pwf)
+ 	{
+-		Pathway _gmmlData = null;
+-		VPathway _drawing = getWindow().createNewDrawing();
+-		
+-		// initialize new JDOM gpml representation and read the file
+-		try { 
++		if (canDiscardPathway())
++		{
++			Pathway _gmmlData = null;
++			VPathway _drawing = getWindow().createNewDrawing();
+ 			
+-			_gmmlData = new Pathway();
+-			if (pwf.endsWith(".mapp"))
+-			{
+-				_gmmlData.readFromMapp(new File(pwf));
+-			}
+-			else
+-			{
+-				_gmmlData.readFromXml(new File(pwf), true);
+-			}
+-		} catch(ConverterException e) {		
+-			if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))
+-			{
+-				MessageDialog.openError(getWindow().getShell(), 
++			// initialize new JDOM gpml representation and read the file
++			try { 
++				
++				_gmmlData = new Pathway();
++				if (pwf.endsWith(".mapp"))
++				{
++					_gmmlData.readFromMapp(new File(pwf));
++				}
++				else
++				{
++					_gmmlData.readFromXml(new File(pwf), true);
++				}
++			} catch(ConverterException e) {		
++				if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))
++				{
++					MessageDialog.openError(getWindow().getShell(), 
+ 						"Unable to open Gpml file", 
+ 						"Unable to open Gpml file.\n\n" +
+ 						"The most likely cause for this error is that you are trying to open an old Gpml file. " +
+@@ -198,36 +232,155 @@
+ 						"Non-standard pathways need to be recreated or upgraded. " +
+ 						"Please contact the authors at martijn.vaniersel@bigcat.unimaas.nl if you need help with this.\n" +
+ 						"\nSee error log for details");
+-				log.error("Unable to open Gpml file", e);
++					log.error("Unable to open Gpml file", e);
++				}
++				else
++				{
++					MessageDialog.openError(getWindow().getShell(), 
++											"Unable to open Gpml file", e.getClass() + e.getMessage());
++					log.error("Unable to open Gpml file", e);
++				}
+ 			}
+-			else
++			
++			if(_gmmlData != null) //Only continue if the data is correctly loaded
+ 			{
+-				MessageDialog.openError(getWindow().getShell(), 
+-						"Unable to open Gpml file", e.getClass() + e.getMessage());
+-				log.error("Unable to open Gpml file", e);
++				vPathway = _drawing;
++				pathway = _gmmlData;
++				vPathway.fromGmmlData(_gmmlData);
++				updateTitle();
++				fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.OPEN_PATHWAY));
+ 			}
+ 		}
+-		
+-		if(_gmmlData != null) //Only continue if the data is correctly loaded
++	}
++	
++	/**
++	 Create a new pathway (drawing + gpml data)
++	 Asks to discard an existing pathway
++	 */
++	public static void newPathway()
++	{
++		if (canDiscardPathway())
+ 		{
+-			vPathway = _drawing;
+-			pathway = _gmmlData;
+-			vPathway.fromGmmlData(_gmmlData);
+-			fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.OPEN_PATHWAY));
++			pathway = new Pathway();
++			pathway.initMappInfo();
++			vPathway = getWindow().createNewDrawing();
++			vPathway.fromGmmlData(pathway);
++			fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.NEW_PATHWAY));
++			updateTitle();
+ 		}
+-		
+ 	}
+-	
++
+ 	/**
+-	 * Create a new pathway (drawing + gpml data)
++	   Opens a file dialog and lets user select a file.
++	   Then the pathways is saved to that file.
++	   returns false if the action was cancelled by the user
+ 	 */
+-	public static void newPathway() {
+-		pathway = new Pathway();
+-		pathway.initMappInfo();
+-		vPathway = getWindow().createNewDrawing();
+-		vPathway.fromGmmlData(pathway);
+-		fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.NEW_PATHWAY));
++	public static boolean savePathwayAs()
++	{
++		// Check if a gpml pathway is loaded
++		if (pathway != null)
++		{
++			FileDialog fd = new FileDialog(window.getShell(), SWT.SAVE);
++			fd.setText("Save");
++			fd.setFilterExtensions(new String[] {"*." + Engine.PATHWAY_FILE_EXTENSION, "*.*"});
++			fd.setFilterNames(new String[] {Engine.PATHWAY_FILTER_NAME, "All files (*.*)"});
++			
++			File xmlFile = pathway.getSourceFile();
++			if(xmlFile != null) {
++				fd.setFileName(xmlFile.getName());
++				fd.setFilterPath(xmlFile.getPath());
++			} else {
++					fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
++			}
++			String fileName = fd.open();
++			// Only proceed if user selected a file
++			
++			if(fileName == null) return false;
++			
++			// Append .gpml extension if not already present
++			if(!fileName.endsWith("." + Engine.PATHWAY_FILE_EXTENSION)) 
++				fileName += "." + Engine.PATHWAY_FILE_EXTENSION;
++			
++			File checkFile = new File(fileName);
++			boolean confirmed = true;
++			// If file exists, ask overwrite permission
++			if(checkFile.exists())
++			{
++				confirmed = MessageDialog.openQuestion(window.getShell(),"",
++													   "File already exists, overwrite?");
++			}
++			if(confirmed)
++			{
++				double usedZoom = vPathway.getPctZoom();
++				// Set zoom to 100%
++				vPathway.setPctZoom(100);					
++				// Overwrite the existing xml file
++				try
++				{
++					pathway.writeToXml(checkFile, true);
++					updateTitle();
++					// Set zoom back
++					vPathway.setPctZoom(usedZoom);
++				}
++				catch (ConverterException e)
++				{
++					String msg = "While writing xml to " 
++						+ checkFile.getAbsolutePath();					
++					MessageDialog.openError (window.getShell(), "Error", 
++											 "Error: " + msg + "\n\n" + 
++											 "See the error log for details.");
++					Engine.log.error(msg, e);
++				}
++			}
++		}
++		else
++		{
++			MessageDialog.openError (window.getShell(), "Error", 
++									 "No gpml file loaded! Open or create a new gpml file first");
++		}			
++		return true;
+ 	}
++
++	/**
++	   Checks if the current pathway has changes, and if so, pops up a dialog
++	   offering to save.
++	   This should always be called before you change pathway
++
++	   @return returns false if the user pressed cancel. 
++	   
++	   TODO: Currently always asks, even if there were no changes since last save.
++	 */
++	static public boolean canDiscardPathway()
++	{
++		// checking not necessary if there is no pathway.
++		if (pathway == null) return true;
++		String[] opts =
++		{
++			IDialogConstants.YES_LABEL,
++			IDialogConstants.NO_LABEL,
++			IDialogConstants.CANCEL_LABEL
++		};
++		MessageDialog msgDlg = new MessageDialog (
++			window.getShell(),
++			"Save changes?",
++			null,
++			"Your pathway may have changed. Do you want to save?",
++			MessageDialog.QUESTION,
++			opts,
++			0);
++		int result = msgDlg.open();
++		if (result == 2) // cancel
++		{
++			return false;
++		}
++		else if (result == 0) // yes
++		{
++			// return false if save is cancelled.
++			return (savePathway());
++		}
++		// no
++		return true;
++	}
+ 	
+ 	/**
+ 	 * Find out whether a drawing is currently open or not
+@@ -297,7 +450,12 @@
+ 	
+ 		return connector;
+ 	}
+-	
++
++	/**
++	   Opens a URL in the default webbrowser.  Uses a progress dialog
++	   if it takes a long time.  Shows an error message and returns
++	   false if it somehow failed to open the web page.
++	*/
+ 	public static boolean openWebPage(String url, String progressMsg, String errMsg) {
+ 		Shell shell = getWindow().getShell();
+ 		if(shell == null || shell.isDisposed()) return false;
+@@ -368,4 +526,45 @@
+ 		}
+ 	}
+ 
+-}
++
++/**
++   save the current pathway
++   returns false if the action was cancelled by the user
++   
++   Calls savePathwayAs if the filename of the current pathway is unknown,
++   so that the user can set a location for this pathway
++*/
++	public static boolean savePathway()
++	{
++		boolean result = true;
++		
++		double usedZoom = vPathway.getPctZoom();
++		// Set zoom to 100%
++		vPathway.setPctZoom(100);			
++		// Overwrite the existing xml file
++		if (pathway.getSourceFile() != null)
++		{
++			try
++			{
++				pathway.writeToXml(pathway.getSourceFile(), true);
++			}
++			catch (ConverterException e)
++			{
++				String msg = "While writing xml to " 
++					+ pathway.getSourceFile().getAbsolutePath();					
++				MessageDialog.openError (window.getShell(), "Error", 
++										 "Error: " + msg + "\n\n" + 
++										 "See the error log for details.");
++				Engine.log.error(msg, e);
++			}
++		}
++		else
++		{
++			result = savePathwayAs();
++		}
++		// Set zoom back
++		vPathway.setPctZoom(usedZoom);
++
++		return result;
++	}
++}
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/gui/CommonActions.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/CommonActions.java	(revision 922)
++++ trunk/src/core/org/pathvisio/gui/CommonActions.java	(revision 923)
+@@ -41,9 +41,18 @@
+ import org.pathvisio.preferences.Preferences;
+ import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
+ import org.pathvisio.view.VPathway;
++import edu.stanford.ejalbert.BrowserLauncher;
+ 
+ /**
+    This class contains a large number of JFace Actions that are both in V1 and V2.
++
++   These actions just bind keyboard shortcuts, menu items and toolbar
++   icons to actions elsewhere in the program. Therefore these should
++   be a light as possible, delegating functionality to appropriate
++   other classes such as
++   - Engine (for open / save / new / import / export)
++   - PreferenceManager (for preferences)
++   - Engine.getVPathway() (for undo, redo, copy, paste).
+ */   
+ public class CommonActions 
+ {
+@@ -58,9 +67,9 @@
+ 		}
+ 		public void run() 
+ 		{
+-			if (Engine.pathway != null)
++			if (Engine.getPathway() != null)
+ 			{
+-				Engine.pathway.undo();
++				Engine.getPathway().undo();
+ 			}
+ 		}
+ 	}
+@@ -79,15 +88,10 @@
+ 			setImageDescriptor(ImageDescriptor.createFromURL(
+ 					Engine.getResourceURL("icons/new.gif")));
+ 		}
+-		public void run () {
+-			if (Engine.pathway == null ||
+-				MessageDialog.openQuestion(window.getShell(), "Discard changes?",
+-						"Warning: This will discard any changes to " +
+-						"the current pathway. Are you sure?"))
+-			{
+-				Engine.newPathway();
+-			}
+-		}
++		public void run ()
++		{			
++			Engine.newPathway();
++		}	
+ 	}
+ 	
+ 	/**
+@@ -105,6 +109,7 @@
+ 		}
+ 		public void run () 
+ 		{
++			//TODO: move to engine, merge with "save"
+ 			VPathway drawing = Engine.getVPathway();
+ 			Pathway gmmlData = Engine.getPathway();
+ 			// Check if a gpml pathway is loaded
+@@ -196,7 +201,7 @@
+ 	        // Only open pathway if user selected a file
+ 	        
+ 	        if(fnMapp != null) { 
+-	        	Engine.openPathway(fnMapp); 
++	        	Engine.openPathway(fnMapp);
+ 	        }
+ 		}
+ 	}
+@@ -215,17 +220,20 @@
+ 		}
+ 		public void run () 
+ 		{
+-			FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
+-			fd.setText("Open");
+-			fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+-			fd.setFilterExtensions(new String[] {"*." + Engine.GENMAPP_FILE_EXTENSION, "*.*"});
+-			fd.setFilterNames(new String[] {Engine.GENMAPP_FILTER_NAME, "All files (*.*)"});
+-	        String fnMapp = fd.open();
+-	        // Only open pathway if user selected a file
+-	        
+-	        if(fnMapp != null) { 
+-	        	Engine.openPathway(fnMapp); 
+-	        }
++			if (Engine.canDiscardPathway())
++			{
++				FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
++				fd.setText("Import");
++				fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
++				fd.setFilterExtensions(new String[] {"*." + Engine.GENMAPP_FILE_EXTENSION, "*.*"});
++				fd.setFilterNames(new String[] {Engine.GENMAPP_FILTER_NAME, "All files (*.*)"});
++				String fnMapp = fd.open();
++				// Only open pathway if user selected a file
++				
++				if(fnMapp != null) { 
++					Engine.openPathway(fnMapp); 
++				}
++			}
+ 		}
+ 	}
+ 
+@@ -242,74 +250,9 @@
+ 			setToolTipText ("Save pathway with new file name");
+ 		}
+ 		
+-		static public void do_run(MainWindow window)
+-		{
+-			VPathway drawing = Engine.getVPathway();
+-			Pathway gmmlData = Engine.getPathway();
+-			// Check if a gpml pathway is loaded
+-			if (drawing != null)
+-			{
+-				FileDialog fd = new FileDialog(window.getShell(), SWT.SAVE);
+-				fd.setText("Save");
+-				fd.setFilterExtensions(new String[] {"*." + Engine.PATHWAY_FILE_EXTENSION, "*.*"});
+-				fd.setFilterNames(new String[] {Engine.PATHWAY_FILTER_NAME, "All files (*.*)"});
+-				
+-				File xmlFile = gmmlData.getSourceFile();
+-				if(xmlFile != null) {
+-					fd.setFileName(xmlFile.getName());
+-					fd.setFilterPath(xmlFile.getPath());
+-				} else {
+-					fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+-				}
+-				String fileName = fd.open();
+-				// Only proceed if user selected a file
+-				
+-				if(fileName == null) return;
+-				
+-				// Append .gpml extension if not already present
+-				if(!fileName.endsWith("." + Engine.PATHWAY_FILE_EXTENSION)) 
+-					fileName += "." + Engine.PATHWAY_FILE_EXTENSION;
+-				
+-				File checkFile = new File(fileName);
+-				boolean confirmed = true;
+-				// If file exists, ask overwrite permission
+-				if(checkFile.exists())
+-				{
+-					confirmed = MessageDialog.openQuestion(window.getShell(),"",
+-					"File already exists, overwrite?");
+-				}
+-				if(confirmed)
+-				{
+-					double usedZoom = drawing.getPctZoom();
+-					// Set zoom to 100%
+-					drawing.setPctZoom(100);					
+-					// Overwrite the existing xml file
+-					try
+-					{
+-						gmmlData.writeToXml(checkFile, true);
+-						// Set zoom back
+-						drawing.setPctZoom(usedZoom);
+-					}
+-					catch (ConverterException e)
+-					{
+-						String msg = "While writing xml to " 
+-							+ checkFile.getAbsolutePath();					
+-						MessageDialog.openError (window.getShell(), "Error", 
+-								"Error: " + msg + "\n\n" + 
+-								"See the error log for details.");
+-						Engine.log.error(msg, e);
+-					}
+-				}
+-			}
+-			else
+-			{
+-				MessageDialog.openError (window.getShell(), "Error", 
+-					"No gpml file loaded! Open or create a new gpml file first");
+-			}			
+-		}
+ 		public void run () 
+ 		{
+-			do_run(window);
++			Engine.savePathwayAs();
+ 		}
+ 	}
+ 
+@@ -327,6 +270,7 @@
+ 			setToolTipText ("Export Pathway to GenMAPP format");
+ 		}
+ 		public void run () {
++			//TODO: move to engine, merge with "save" or "saveAs"
+ 			VPathway drawing = Engine.getVPathway();
+ 			Pathway gmmlData = Engine.getPathway();
+ 			// Check if a gpml pathway is loaded
+@@ -437,7 +381,8 @@
+ 			setText ("&Close pathway@Ctrl+W");
+ 			setToolTipText ("Close this pathway");
+ 		}
+-		public void run () {
++		public void run ()
++		{
+ 			//TODO: unload drawing, ask to save
+ 		}
+ 	}
+@@ -454,9 +399,12 @@
+ 			setText ("E&xit@Ctrl+X");
+ 			setToolTipText ("Exit Application");
+ 		}
+-		public void run () {
+-			window.close();
+-			//TODO: ask to save pathway if content is changed
++		public void run ()
++		{
++			if (Engine.canDiscardPathway())
++			{
++				window.close();
++			}
+ 		}
+ 	}
+ 	
+@@ -546,9 +494,9 @@
+ 			gmmlAboutBox.open();
+ 		}
+ 	}
+-	
++
+ 	/**
+-	 * {@link Action} to open a {@link AboutDlg} window
++	 * {@link Action} to open a Help window
+ 	 */
+ 	static class HelpAction extends Action 
+ 	{
+@@ -559,24 +507,12 @@
+ 			setText ("&Help@F1");
+ 			setToolTipText ("Opens " + Globals.APPLICATION_VERSION_NAME + " help in your web browser");
+ 		}
+-		public void run () {
+-			SimpleRunnableWithProgress rwp = new SimpleRunnableWithProgress(
+-					window.getClass(), "openHelp", new Class[] {}, new Object[] {}, null);
+-			SimpleRunnableWithProgress.setMonitorInfo("Opening help", IProgressMonitor.UNKNOWN);
+-			ProgressMonitorDialog dialog = new ProgressMonitorDialog(window.getShell());
+-			try {
+-				dialog.run(true, true, rwp);
+-			} catch (InvocationTargetException e) {
+-				Throwable cause = e.getCause();
+-				String msg = cause == null ? null : cause.getMessage();
+-				MessageDialog.openError(window.getShell(), "Unable to open help",
+-				"Unable to open web browser" +
+-				(msg == null ? "" : ": " + msg) +
+-				"\nYou can open the help page manually:\n" +
+-				Globals.HELP_URL);
+-			} catch (InterruptedException ignore) {}
+-			
+-
++		public void run ()
++		{
++			Engine.openWebPage(Globals.HELP_URL, "Opening help page in broswer",
++						"Unable to open web browser" +
++						"\nYou can open the help page manually:\n" +
++						Globals.HELP_URL);
+ 		}
+ 	}
+ 
+@@ -591,7 +527,7 @@
+ 		}
+ 		public void run()
+ 		{
+-			Engine.vPathway.copyToClipboard();
++			Engine.getVPathway().copyToClipboard();
+ 		}
+ 	}
+ 
+@@ -606,7 +542,7 @@
+ 		}
+ 		public void run()
+ 		{
+-			Engine.vPathway.pasteFromClipboad();
++			Engine.getVPathway().pasteFromClipboad();
+ 		}
+ 	}
+ 	
+@@ -624,36 +560,9 @@
+ 			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getResourceURL("icons/save.gif")));
+ 		}
+ 		
+-		public void run () {
+-			Pathway gmmlData = Engine.getPathway();
+-			VPathway drawing = Engine.getVPathway();
+-			
+-			double usedZoom = drawing.getPctZoom();
+-			// Set zoom to 100%
+-			drawing.setPctZoom(100);			
+-			// Overwrite the existing xml file
+-			if (gmmlData.getSourceFile() != null)
+-			{
+-				try
+-				{
+-					gmmlData.writeToXml(gmmlData.getSourceFile(), true);
+-				}
+-				catch (ConverterException e)
+-				{
+-					String msg = "While writing xml to " 
+-							+ gmmlData.getSourceFile().getAbsolutePath();					
+-					MessageDialog.openError (window.getShell(), "Error", 
+-							"Error: " + msg + "\n\n" + 
+-							"See the error log for details.");
+-					Engine.log.error(msg, e);
+-				}
+-			}
+-			else
+-			{
+-				SaveAsAction.do_run(window);
+-			}
+-			// Set zoom back
+-			drawing.setPctZoom(usedZoom);
++		public void run ()
++		{
++			Engine.savePathway();
+ 		}
+ 	}
+ 	
+@@ -673,5 +582,4 @@
+ 			d.open();
+ 		}
+ 	}
+-
+ }
+Index: trunk/src/core/org/pathvisio/gui/AlignActions.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/AlignActions.java	(revision 922)
++++ trunk/src/core/org/pathvisio/gui/AlignActions.java	(revision 923)
+@@ -45,7 +45,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(CENTERX);
++				Engine.getVPathway().alignSelected(CENTERX);
+ 				
+ 			}
+ 		}
+@@ -63,7 +63,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(CENTERY);
++				Engine.getVPathway().alignSelected(CENTERY);
+ 				
+ 			}
+ 		}
+@@ -80,7 +80,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(LEFT);
++				Engine.getVPathway().alignSelected(LEFT);
+ 				
+ 			}
+ 		}
+@@ -97,7 +97,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(RIGHT);
++				Engine.getVPathway().alignSelected(RIGHT);
+ 				
+ 			}
+ 		}
+@@ -114,7 +114,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(TOP);
++				Engine.getVPathway().alignSelected(TOP);
+ 				
+ 			}
+ 		}
+@@ -131,7 +131,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.alignSelected(BOTTOM);
++				Engine.getVPathway().alignSelected(BOTTOM);
+ 				
+ 			}
+ 		}
+@@ -148,7 +148,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.scaleSelected(HEIGHT);
++				Engine.getVPathway().scaleSelected(HEIGHT);
+ 				
+ 			}
+ 		}
+@@ -165,7 +165,7 @@
+ 			public void run () 
+ 			{
+ 				
+-				Engine.vPathway.scaleSelected(WIDTH);
++				Engine.getVPathway().scaleSelected(WIDTH);
+ 				
+ 			}
+ 		}
+Index: trunk/src/core/org/pathvisio/util/SwtUtils.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/SwtUtils.java	(revision 922)
++++ trunk/src/core/org/pathvisio/util/SwtUtils.java	(revision 923)
+@@ -271,7 +271,9 @@
+ 		/**
+ 		 * Constructor for this class<BR>
+ 		 * Sets the signature of the method to be called and its argument values
+-		 * @param fromClass	the Class to which the method belongs that has to be called
++		 * @param fromClass the Class to which the method belongs that
++		 * has to be called. you can get this with instance.getClass()
++		 * or StaticClass.class
+ 		 * @param method	the method to be called
+ 		 * @param parameters	the classes of the method's arguments
+ 		 * @param args	the argument values to pass to the method

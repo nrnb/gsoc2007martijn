@@ -1,0 +1,62 @@
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 998)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 999)
+@@ -661,8 +661,8 @@
+ 	 * 
+ 	 * if you want to get more than one @see #getObjectsAt(Point2D)
+ 	 */
+-	VPathwayElement getObjectAt(Point2D p2d) {
+-		System.out.println(p2d);
++	VPathwayElement getObjectAt(Point2D p2d)
++	{
+ 		Collections.sort(drawingObjects);
+ 		VPathwayElement probj = null;
+ 		for (VPathwayElement o : drawingObjects)
+Index: trunk/src/core/org/pathvisio/view/GeneProduct.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 998)
++++ trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 999)
+@@ -30,6 +30,7 @@
+ /**
+  * This class implements a geneproduct and 
+  * provides methods to resize and draw it.
++ * //TODO: rename this class to DataNode
+  */
+ public class GeneProduct extends GraphicsShape
+ {
+@@ -82,24 +83,25 @@
+ 
+ 	public void doDraw(Graphics2D g)
+ 	{
+-		//Color
++		Rectangle area = new Rectangle(
++				getVLeft(), getVTop(), getVWidth(), getVHeight());
++		
++		//White background
++		g.setPaint (Color.WHITE);
++		g.fill(area);
++		
++		//Rectangular Outline
++		g.setStroke(new BasicStroke());
+ 		if(isSelected()) {
+ 			g.setColor(selectColor);
+ 		} else {
+ 			g.setColor(gdata.getColor());
+ 		}
+-		
+-		//Gene box
+-		g.setStroke(new BasicStroke());
+-		
+-		Rectangle area = new Rectangle(
+-				getVLeft(), getVTop(), getVWidth(), getVHeight());
+-		
+ 		g.draw(area);
+ 		
+ 		//Label
+ 		//Don't draw label outside gene box
+-		g.setClip ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
++		g.clip (new Rectangle (area.x - 1, area.y - 1, area.width + 1, area.height + 1));
+ 	
+ 		g.setFont(new Font(gdata.getFontName(), getVFontStyle(), getVFontSize()));
+ 		

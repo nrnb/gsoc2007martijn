@@ -1,0 +1,869 @@
+Index: trunk/src/core/org/pathvisio/model/MappFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 1116)
+@@ -42,8 +42,24 @@
+  * .mapp files (GenMapp pathway format). Here is also codified all the
+  * assumptions about the .mapp format.
+  * 
+- * @author Martijn, Thomas
++ * 
++ * Certain aspects of the Mapp <-> GPML conversion are getting quite hairy,
++ * as there are certain inconsistencies within GenMAPP. We intend to isolate
++ * all these inconsistencies just within this class, so they don't propagate
++ * to the rest of PathVisio.
++ * 
++ * For example:
++ * 
++ * Color: The "Color" column in the Objects table sometimes corresponds to 
++ * fillColor (for Rect and Oval) and sometimes to LineColor (for Label, Line,
++ * Arc, Brace, etc.). This gets confusing especially for Arc and Brace, because
++ * they all get mapped to ObjectType.Shape. For those objects that can have
++ * a fill color, the value of the color column can be -1, which indicates
++ * transparency.
+  *
++ * Size: certain objects (i.e. Polygons) always maintain equal width and height.
++ * other objects always have a fixed size and even a fixed rotation in the case
++ * of CELLB.
+  */
+ public class MappFormat implements PathwayImporter, PathwayExporter
+ {		
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1116)
+@@ -1099,7 +1099,7 @@
+ 	}
+ 	
+ 	static public void readFromXml(Pathway pwy, File file, boolean validate) throws ConverterException
+-	{
++	{		
+ 		FileReader inf;
+ 		try	
+ 		{
+@@ -1115,19 +1115,22 @@
+ 	static public void readFromXml(Pathway pwy, Reader in, boolean validate) throws ConverterException
+ 	{
+ 		// Start XML processing
+-
++		
+ 		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
+ 		// try to read the file; if an error occurs, catch the exception and print feedback
+ 		try
+ 		{
++			Logger.log.trace ("Build JDOM tree");
+ 			// build JDOM tree
+ 			Document doc = builder.build(in);
+ 
++			Logger.log.trace ("Start Validation");
+ 			if (validate) validateDocument(doc);
+ 			
+ 			// Copy the pathway information to a VPathway
+ 			Element root = doc.getRootElement();
+ 			
++			Logger.log.trace ("Copy map elements");
+ 			mapElement(root, pwy); // MappInfo
+ 			
+ 			// Iterate over direct children of the root element
+@@ -1135,6 +1138,7 @@
+ 			{
+ 				mapElement((Element)e, pwy);
+ 			}			
++			Logger.log.trace ("End copying map elements");
+ 		}
+ 		catch(JDOMParseException pe) 
+ 		{
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1116)
+@@ -409,8 +409,7 @@
+ 
+ 	public void readFromXml(File file, boolean validate) throws ConverterException
+ 	{
+-		Logger.log.info("Start reading the XML file: " + file);
+-		
++		Logger.log.info("Start reading the XML file: " + file);	  
+ 		GpmlFormat.readFromXml (this, file, validate);
+ 		setSourceFile (file);
+ 		clearChangedFlag();
+Index: trunk/src/core/org/pathvisio/debug/Logger.java
+===================================================================
+--- trunk/src/core/org/pathvisio/debug/Logger.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/debug/Logger.java	(revision 1116)
+@@ -42,6 +42,14 @@
+ 		
+ 	public PrintStream getStream () { return s; }	
+ 	public void setStream (PrintStream _s) { s = _s; }
++
++	StopWatch logTimer;
++
++	public Logger()
++	{
++		logTimer = new StopWatch();
++		logTimer.start();
++	}
+ 	
+ 	/** 
+ 		get/set log level to a certain level. The higher the level, the
+@@ -58,10 +66,36 @@
+ 		errorEnabled = error;
+ 		fatalEnabled = fatal;
+ 	}
+-		
+-	public void trace (String msg) { if (traceEnabled) s.println ("Trace: " + msg); }
+-	public void debug (String msg) { if (debugEnabled) s.println ("Debug: " + msg); }
+-	public void info  (String msg) { if (infoEnabled) s.println ("Info:  " + msg); }
++
++	private static final String FORMAT_STRING = "[%10.3f] ";
++	
++	public void trace (String msg)
++	{
++		if (traceEnabled)
++		{
++			s.printf (FORMAT_STRING , logTimer.look() / 1000.0f);
++			s.println ("Trace: " + msg);
++		}
++	}
++	
++	public void debug (String msg)
++	{
++		if (debugEnabled)
++		{
++			s.printf (FORMAT_STRING , logTimer.look() / 1000.0f);
++			s.println ("Debug: " + msg);
++		}
++	}
++	
++	public void info  (String msg)
++	{
++		if (infoEnabled)
++		{
++			s.printf (FORMAT_STRING , logTimer.look() / 1000.0f);
++			s.println ("Info:  " + msg);
++		}
++	}
++
+ 	public void warn  (String msg) { if (warnEnabled) s.println ("Warn:  " + msg); }
+ 	public void error (String msg) { if (errorEnabled) s.println ("Error: " + msg); }
+ 	public void error (String msg, Throwable e) 
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 1116)
+@@ -108,20 +108,17 @@
+ 		
+ 		switch(gdata.getShapeType()) {
+ 		case OVAL:
+-			s = new Ellipse2D.Double(x, y, w, h);
++			s = ShapeRegistry.getShape ("Oval", x, y, w, h);
+ 			break;
+-		case ARC:;
+-			s = new Arc2D.Double (x, y, w, h, 0, -180, Arc2D.OPEN);
++		case ARC:
++			s = ShapeRegistry.getShape ("Arc", x, y, w, h);
+ 			break;
+ 		case BRACE:
+-			GeneralPath p = new GeneralPath();
+-            p.moveTo(x, y + h);
+-            p.quadTo(x, y + h/2, x + w/4, y + h/2);
+-            p.quadTo(cx, y + h/2, cx, y);
+-            p.quadTo(cx, y + h/2, cx + w/4, y + h/2);
+-            p.quadTo(x + w, y + h/2, x + w, y + h);
+-            s = p;
++			s = ShapeRegistry.getShape ("Brace", x, y, w, h);
+ 			break;
++		case RECTANGLE:
++			s = ShapeRegistry.getShape ("Rectangle", x, y, w, h);
++			break;
+ 		case PENTAGON:
+ 			s = ShapeRegistry.getShape ("Pentagon", x, y, w, h);
+ 			break;
+@@ -153,7 +150,7 @@
+ 			s = ShapeRegistry.getShape ("Vesicle", x, y, w, h);
+ 			break;
+ 		default:
+-			s = new Rectangle(x, y, w, h);
++			s = ShapeRegistry.getShape ("Default", x, y, w, h);
+ 			break;
+ 		}
+ 		AffineTransform t = new AffineTransform();
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 1116)
+@@ -51,7 +51,7 @@
+ import org.pathvisio.model.ShapeType;
+ import org.pathvisio.model.PathwayElement.MPoint;
+ import org.pathvisio.view.SelectionBox.SelectionListener;
+-
++import org.pathvisio.debug.Logger;
+ /**
+  * This class implements and handles a drawing. Graphics objects are stored in
+  * the drawing and can be visualized. The class also provides methods for mouse
+@@ -222,7 +222,9 @@
+ 	 * Maps the contents of a pathway to this VPathway
+ 	 */	
+ 	public void fromGmmlData(Pathway _data)
+-	{		
++	{
++		Logger.log.trace ("Create view structure");
++
+ 		data = _data;
+ 		for (PathwayElement o : data.getDataObjects())
+ 		{
+@@ -238,6 +240,7 @@
+ //				PathwayEvent.MODIFIED_GENERAL));
+ 		fireVPathwayEvent(new VPathwayEvent(this, VPathwayEvent.MODEL_LOADED));
+ 		data.addListener(this);
++		Logger.log.trace ("Done creating view structure");
+ 	}
+ 
+ 	private int newGraphics = NEWNONE;
+Index: trunk/src/core/org/pathvisio/view/BasicShapes.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/BasicShapes.java	(revision 0)
++++ trunk/src/core/org/pathvisio/view/BasicShapes.java	(revision 1116)
+@@ -0,0 +1,49 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.view;
++
++import java.awt.BasicStroke;
++import java.awt.Color;
++import java.awt.Graphics2D;
++import java.awt.Rectangle;
++import java.awt.geom.AffineTransform;
++import java.awt.geom.Arc2D;
++import java.awt.geom.Ellipse2D;
++import java.awt.geom.GeneralPath;
++
++class BasicShapes
++{
++	static void registerShapes()
++	{
++		ShapeRegistry.registerShape (
++			"Arc", new Arc2D.Double (0, 0, 10, 10, 0, -180, Arc2D.OPEN));
++
++		GeneralPath p = new GeneralPath();
++		p.moveTo(0, 4);
++		p.quadTo(0, 2, 3, 2);
++		p.quadTo(6, 2, 6, 0);
++		p.quadTo(6, 2, 9, 2);
++		p.quadTo(12, 2, 12, 4);		
++		ShapeRegistry.registerShape (
++			"Brace", p);
++
++		ShapeRegistry.registerShape (
++			"Oval", new Ellipse2D.Double (0, 0, 10, 10));
++		ShapeRegistry.registerShape (
++			"Rectangle", new Rectangle (0, 0, 10, 10));		
++	}
++}
+\ No newline at end of file
+
+Property changes on: trunk/src/core/org/pathvisio/view/BasicShapes.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/src/core/org/pathvisio/view/ShapeRegistry.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/ShapeRegistry.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/view/ShapeRegistry.java	(revision 1116)
+@@ -19,195 +19,58 @@
+ import java.util.Map;
+ import java.util.HashMap;
+ import java.awt.Shape;
+-import java.awt.Rectangle;
+ import java.awt.geom.GeneralPath;
++import java.awt.Rectangle;
+ import java.awt.geom.AffineTransform;
+-import org.pathvisio.model.ShapeType;
++import org.pathvisio.debug.Logger;
+ 
+ class ShapeRegistry
+ {
+-	static Map <String, Shape> registry = null;
+-		
++	private static Map <String, Shape> registry = new HashMap <String, Shape>();
++
++	private static Shape defaultShape = null;
++
+ 	static
+ 	{
+-		registry = new HashMap <String, Shape>();
+-		registry.put ("Pentagon", getRegularPolygon (5, 10, 10) );
+-		registry.put ("Hexagon", getRegularPolygon (6, 10, 10) );
+-		registry.put ("Triangle", getRegularPolygon (3, 10, 10) );
+-		registry.put ("OrganA", getPluggableShape (ShapeType.ORGANA));
+-		registry.put ("OrganB", getPluggableShape (ShapeType.ORGANB));
+-		registry.put ("OrganC", getPluggableShape (ShapeType.ORGANC));
+-		registry.put ("CellA", getPluggableShape (ShapeType.CELLA));
+-		registry.put ("Ribosome", getPluggableShape (ShapeType.RIBOSOME));
+-		registry.put ("ProteinB", getPluggableShape (ShapeType.PROTEINB));
+-		registry.put ("Vesicle", getPluggableShape (ShapeType.VESICLE));
+-	}
++		GeneralPath temp = new GeneralPath();
++		temp.moveTo (0,0);
++		temp.lineTo (10,0);
++		temp.lineTo (10,10);
++		temp.lineTo (0,10);
++		temp.closePath ();
++		temp.moveTo (2,2);
++		temp.lineTo (8,8);
++		temp.moveTo (2,8);
++		temp.lineTo (8,2);		
++		defaultShape = temp;
+ 
+-	public static Shape getShape (String name, double x, double y, double w, double h)
+-	{
+-		Shape sh = registry.get (name);
+-		if (sh != null)
+-		{
+-			// now scale the path so it has proper w and h.
+-			Rectangle r = sh.getBounds();
+-			AffineTransform at = new AffineTransform();
+-			at.translate (x - r.x, y - r.y);
+-			at.scale (w / r.width, h / r.height);
+-			return at.createTransformedShape (sh);
+-		}
+-		return null;
++		BasicShapes.registerShapes();
++		GenMAPPShapes.registerShapes();
+ 	}
+-
++	
+ 	/**
+-	   Internal, 
+-	   Only for general shape types that can be described as a path.
+-	   The shapes are constructed as a general path with arbitrary size
+-	   and then resized to fit w and h parameters.
++	   Add a shape to the registry.
+ 	 */
+-	static private Shape getPluggableShape (ShapeType st)
++	public static void registerShape (String key, Shape sh)
+ 	{
+-		GeneralPath path = new GeneralPath();
+-		switch (st)
+-		{
+-		case ORGANA:
+-			path.moveTo (33, 30);
+-			path.curveTo (33, 46, 26, 60, 17, 60);
+-			path.curveTo (8, 60, 0, 46, 0, 30);
+-			path.curveTo (0, 14, 8, 0, 17, 0);
+-			path.curveTo (26, 0, 33, 14, 33, 30);
+-			path.closePath();
+-			break;
+-		case CELLA:
+-			path.moveTo (44, 140);
+-			path.curveTo (38, 158, 28, 169, 21, 165);
+-			path.curveTo (15, 161, 14, 143, 20, 126);
+-			path.curveTo (26, 108, 36, 97, 43, 101);
+-			path.curveTo (49, 105, 50, 123, 44, 140);
+-			path.closePath();
+-			path.moveTo (64, 109);
+-			path.curveTo (49, 162, 27, 202, 13, 198);
+-			path.curveTo (0, 193, 1, 147, 16, 93);
+-			path.curveTo (31, 40, 54, 0, 67, 5);
+-			path.curveTo (80, 9, 79, 56, 64, 109);
+-			path.closePath();
+-			break;
+-		case ORGANC:
+-			path.moveTo (45, 23);
+-			path.curveTo (45, 34, 36, 43, 24, 43);
+-			path.curveTo (13, 43, 3, 34, 3, 23);
+-			path.curveTo (3, 12, 13, 3, 24, 3);
+-			path.curveTo (36, 3, 45, 12, 45, 23);
+-			path.closePath();
+-			path.moveTo (48, 23);
+-			path.curveTo (48, 36, 37, 46, 24, 46);
+-			path.curveTo (11, 46, 1, 36, 1, 23);
+-			path.curveTo (1, 11, 11, 0, 24, 0);
+-			path.curveTo (37, 0, 48, 11, 48, 23);
+-			path.closePath();
+-			break;
+-		case ORGANB:
+-			path.moveTo (15, 281);
+-			path.curveTo (6, 254, 0, 199, 0, 156);
+-			path.curveTo (0, 113, 6, 49, 15, 21);
+-			path.curveTo (15, 12, 26, 1, 38, 1);
+-			path.curveTo (49, 1, 60, 11, 60, 23);
+-			path.curveTo (59, 36, 50, 46, 32, 44);
+-			path.curveTo (23, 71, 23, 102, 23, 144);
+-			path.curveTo (23, 188, 23, 227, 32, 254);
+-			path.curveTo (50, 254, 60, 265, 60, 278);
+-			path.curveTo (60, 290, 46, 300, 36, 300);
+-			path.curveTo (27, 300, 15, 289, 15, 281);
+-			path.closePath();
+-			break;
+-		case RIBOSOME:
+-			path.moveTo (23.97f, 0.47f);
+-			path.curveTo (19.30f, 0.47f, 15.22f, 5.18f, 13.03f, 12.16f);
+-			path.curveTo (11.68f, 10.52f, 10.06f, 9.53f, 8.28f, 9.53f);
+-			path.curveTo (3.71f, 9.53f, -0.00f, 15.90f, 0.00f, 23.75f);
+-			path.curveTo (0.00f, 31.60f, 3.71f, 37.97f, 8.28f, 37.97f);
+-			path.curveTo (10.02f, 37.97f, 11.64f, 37.04f, 12.97f, 35.47f);
+-			path.curveTo (15.14f, 42.57f, 19.25f, 47.38f, 23.97f, 47.38f);
+-			path.curveTo (30.95f, 47.38f, 36.63f, 36.85f, 36.63f, 23.91f);
+-			path.curveTo (36.63f, 10.96f, 30.95f, 0.47f, 23.97f, 0.47f);
+-			path.closePath();
+-			break;
+-		case PROTEINB:
+-			path.moveTo (35.22f, 1.03f);
+-			path.curveTo (28.17f, 1.34f, 21.64f, 5.70f, 18.19f, 11.78f);
+-			path.curveTo (7.92f, 13.45f, 0.25f, 23.46f, 0.47f, 33.72f);
+-			path.curveTo (0.27f, 43.64f, 7.43f, 53.33f, 17.25f, 55.40f);
+-			path.curveTo (21.43f, 63.78f, 31.55f, 68.86f, 40.71f, 66.31f);
+-			path.curveTo (46.39f, 64.88f, 51.27f, 60.86f, 54.06f, 55.75f);
+-			path.curveTo (64.33f, 54.31f, 72.18f, 44.49f, 72.18f, 34.27f);
+-			path.curveTo (72.63f, 24.01f, 65.17f, 13.84f, 54.94f, 11.93f);
+-			path.curveTo (52.33f, 8.95f, 49.65f, 5.12f, 45.70f, 3.35f);
+-			path.curveTo (42.49f, 1.64f, 38.84f, 0.89f, 35.22f, 1.03f);
+-			path.closePath();
+-			path.moveTo (35.41f, 4.53f);
+-			path.curveTo (43.73f, 3.99f, 51.43f, 10.33f, 53.37f, 18.29f);
+-			path.curveTo (54.52f, 22.42f, 54.39f, 27.08f, 52.34f, 30.90f);
+-			path.curveTo (47.43f, 24.06f, 37.85f, 20.57f, 29.78f, 23.34f);
+-			path.curveTo (25.94f, 24.54f, 22.47f, 26.87f, 19.87f, 29.94f);
+-			path.curveTo (15.56f, 19.96f, 22.24f, 6.85f, 33.04f, 4.83f);
+-			path.curveTo (33.82f, 4.67f, 34.61f, 4.57f, 35.41f, 4.53f);
+-			path.closePath();
+-			path.moveTo (16.34f, 15.78f);
+-			path.curveTo (14.45f, 21.42f, 14.57f, 28.02f, 17.50f, 33.37f);
+-			path.curveTo (14.54f, 38.79f, 13.51f, 45.40f, 15.56f, 51.31f);
+-			path.curveTo (6.44f, 47.89f, 1.80f, 36.75f, 4.90f, 27.69f);
+-			path.curveTo (6.60f, 22.24f, 10.89f, 17.59f, 16.34f, 15.78f);
+-			path.closePath();
+-			path.moveTo (56.28f, 15.81f);
+-			path.curveTo (65.68f, 18.80f, 70.76f, 29.93f, 67.94f, 39.17f);
+-			path.curveTo (66.32f, 45.03f, 61.68f, 50.04f, 55.81f, 51.78f);
+-			path.curveTo (57.00f, 48.33f, 57.35f, 44.62f, 56.61f, 41.03f);
+-			path.curveTo (56.22f, 37.40f, 53.29f, 34.25f, 56.26f, 30.98f);
+-			path.curveTo (58.07f, 26.12f, 57.96f, 20.69f, 56.28f, 15.81f);
+-			path.closePath();
+-			path.moveTo (35.81f, 25.90f);
+-			path.curveTo (43.76f, 25.85f, 50.93f, 31.93f, 52.77f, 39.57f);
+-			path.curveTo (55.25f, 48.14f, 51.03f, 58.27f, 42.73f, 61.92f);
+-			path.curveTo (35.28f, 65.52f, 25.73f, 62.48f, 21.37f, 55.55f);
+-			path.curveTo (15.48f, 47.23f, 17.70f, 34.43f, 26.28f, 28.84f);
+-			path.curveTo (29.08f, 26.94f, 32.44f, 25.90f, 35.81f, 25.90f);
+-			path.closePath();
+-			break;
+-		case VESICLE:
+-			path.moveTo (15, 281);
+-			path.curveTo (6, 254, 0, 199, 0, 156);
+-			path.curveTo (0, 113, 6, 49, 15, 21);
+-			path.curveTo (15, 12, 26, 1, 38, 1);
+-			path.curveTo (49, 1, 60, 11, 60, 23);
+-			path.curveTo (59, 36, 50, 46, 32, 44);
+-			path.curveTo (23, 71, 23, 102, 23, 144);
+-			path.curveTo (23, 188, 23, 227, 32, 254);
+-			path.curveTo (50, 254, 60, 265, 60, 278);
+-			path.curveTo (60, 290, 46, 300, 36, 300);
+-			path.curveTo (27, 300, 15, 289, 15, 281);
+-			path.closePath();
+-			break;
+-		}
+-		return path;
++		registry.put (key, sh);
+ 	}
+-
+-	static private java.awt.Shape getRegularPolygon (int sides, double w, double h)
++	
++	public static Shape getShape (String name, double x, double y, double w, double h)
+ 	{
+-		GeneralPath path = new GeneralPath();
+-		for (int i = 0; i < sides; ++i)
++		Shape sh = registry.get (name);
++		if (sh == null)
+ 		{
+-			double angle = Math.PI * 2 * i / sides;
+-			double x = (w/2) * (1 + Math.cos (angle));
+-			double y = (h/2) * (1 + Math.sin (angle));
+-			if (i == 0)
+-			{
+-				path.moveTo ((float)x, (float)y);
+-			}
+-			else
+-			{
+-				path.lineTo ((float)x, (float)y);
+-			}
++			sh = defaultShape;
++			// This is probably not what the user wants.
++			// log this as an error
++			Logger.log.error ("Unknown Shape " + name + " was requested");
+ 		}
+-		path.closePath();
+-		return path;
++		// now scale the path so it has proper w and h.
++		Rectangle r = sh.getBounds();
++		AffineTransform at = new AffineTransform();
++		at.translate (x - r.x, y - r.y);
++		at.scale (w / r.width, h / r.height);
++		return at.createTransformedShape (sh);
+ 	}
+ }
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/view/GenMAPPShapes.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GenMAPPShapes.java	(revision 0)
++++ trunk/src/core/org/pathvisio/view/GenMAPPShapes.java	(revision 1116)
+@@ -0,0 +1,196 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.view;
++
++import java.awt.Rectangle;
++import java.awt.geom.AffineTransform;
++import java.awt.geom.GeneralPath;
++import org.pathvisio.model.ShapeType;
++
++class GenMAPPShapes
++{
++	static void registerShapes()
++	{
++		ShapeRegistry.registerShape ("Pentagon", getRegularPolygon (5, 10, 10) );
++		ShapeRegistry.registerShape ("Hexagon", getRegularPolygon (6, 10, 10) );
++		ShapeRegistry.registerShape ("Triangle", getRegularPolygon (3, 10, 10) );
++		ShapeRegistry.registerShape ("OrganA", getPluggableShape (ShapeType.ORGANA));
++		ShapeRegistry.registerShape ("OrganB", getPluggableShape (ShapeType.ORGANB));
++		ShapeRegistry.registerShape ("OrganC", getPluggableShape (ShapeType.ORGANC));
++		ShapeRegistry.registerShape ("CellA", getPluggableShape (ShapeType.CELLA));
++		ShapeRegistry.registerShape ("Ribosome", getPluggableShape (ShapeType.RIBOSOME));
++		ShapeRegistry.registerShape ("ProteinB", getPluggableShape (ShapeType.PROTEINB));
++        //TODO: Vesicle Shape not correct yet.
++        //ShapeRegistry.registerShape ("Vesicle", getPluggableShape (ShapeType.VESICLE));
++		
++	}
++
++
++	/**
++	   Internal, 
++	   Only for general shape types that can be described as a path.
++	   The shapes are constructed as a general path with arbitrary size
++	   and then resized to fit w and h parameters.
++	 */
++	static private java.awt.Shape getPluggableShape (ShapeType st)
++	{
++		GeneralPath path = new GeneralPath();
++		switch (st)
++		{
++		case ORGANA:
++			path.moveTo (33, 30);
++			path.curveTo (33, 46, 26, 60, 17, 60);
++			path.curveTo (8, 60, 0, 46, 0, 30);
++			path.curveTo (0, 14, 8, 0, 17, 0);
++			path.curveTo (26, 0, 33, 14, 33, 30);
++			path.closePath();
++			break;
++		case CELLA:
++			path.moveTo (44, 140);
++			path.curveTo (38, 158, 28, 169, 21, 165);
++			path.curveTo (15, 161, 14, 143, 20, 126);
++			path.curveTo (26, 108, 36, 97, 43, 101);
++			path.curveTo (49, 105, 50, 123, 44, 140);
++			path.closePath();
++			path.moveTo (64, 109);
++			path.curveTo (49, 162, 27, 202, 13, 198);
++			path.curveTo (0, 193, 1, 147, 16, 93);
++			path.curveTo (31, 40, 54, 0, 67, 5);
++			path.curveTo (80, 9, 79, 56, 64, 109);
++			path.closePath();
++			break;
++		case ORGANC:
++			path.moveTo (45, 23);
++			path.curveTo (45, 34, 36, 43, 24, 43);
++			path.curveTo (13, 43, 3, 34, 3, 23);
++			path.curveTo (3, 12, 13, 3, 24, 3);
++			path.curveTo (36, 3, 45, 12, 45, 23);
++			path.closePath();
++			path.moveTo (48, 23);
++			path.curveTo (48, 36, 37, 46, 24, 46);
++			path.curveTo (11, 46, 1, 36, 1, 23);
++			path.curveTo (1, 11, 11, 0, 24, 0);
++			path.curveTo (37, 0, 48, 11, 48, 23);
++			path.closePath();
++			break;
++		case ORGANB:
++			path.moveTo (15, 281);
++			path.curveTo (6, 254, 0, 199, 0, 156);
++			path.curveTo (0, 113, 6, 49, 15, 21);
++			path.curveTo (15, 12, 26, 1, 38, 1);
++			path.curveTo (49, 1, 60, 11, 60, 23);
++			path.curveTo (59, 36, 50, 46, 32, 44);
++			path.curveTo (23, 71, 23, 102, 23, 144);
++			path.curveTo (23, 188, 23, 227, 32, 254);
++			path.curveTo (50, 254, 60, 265, 60, 278);
++			path.curveTo (60, 290, 46, 300, 36, 300);
++			path.curveTo (27, 300, 15, 289, 15, 281);
++			path.closePath();
++			break;
++		case RIBOSOME:
++			path.moveTo (23.97f, 0.47f);
++			path.curveTo (19.30f, 0.47f, 15.22f, 5.18f, 13.03f, 12.16f);
++			path.curveTo (11.68f, 10.52f, 10.06f, 9.53f, 8.28f, 9.53f);
++			path.curveTo (3.71f, 9.53f, -0.00f, 15.90f, 0.00f, 23.75f);
++			path.curveTo (0.00f, 31.60f, 3.71f, 37.97f, 8.28f, 37.97f);
++			path.curveTo (10.02f, 37.97f, 11.64f, 37.04f, 12.97f, 35.47f);
++			path.curveTo (15.14f, 42.57f, 19.25f, 47.38f, 23.97f, 47.38f);
++			path.curveTo (30.95f, 47.38f, 36.63f, 36.85f, 36.63f, 23.91f);
++			path.curveTo (36.63f, 10.96f, 30.95f, 0.47f, 23.97f, 0.47f);
++			path.closePath();
++			break;
++		case PROTEINB:
++			path.moveTo (35.22f, 1.03f);
++			path.curveTo (28.17f, 1.34f, 21.64f, 5.70f, 18.19f, 11.78f);
++			path.curveTo (7.92f, 13.45f, 0.25f, 23.46f, 0.47f, 33.72f);
++			path.curveTo (0.27f, 43.64f, 7.43f, 53.33f, 17.25f, 55.40f);
++			path.curveTo (21.43f, 63.78f, 31.55f, 68.86f, 40.71f, 66.31f);
++			path.curveTo (46.39f, 64.88f, 51.27f, 60.86f, 54.06f, 55.75f);
++			path.curveTo (64.33f, 54.31f, 72.18f, 44.49f, 72.18f, 34.27f);
++			path.curveTo (72.63f, 24.01f, 65.17f, 13.84f, 54.94f, 11.93f);
++			path.curveTo (52.33f, 8.95f, 49.65f, 5.12f, 45.70f, 3.35f);
++			path.curveTo (42.49f, 1.64f, 38.84f, 0.89f, 35.22f, 1.03f);
++			path.closePath();
++			path.moveTo (35.41f, 4.53f);
++			path.curveTo (43.73f, 3.99f, 51.43f, 10.33f, 53.37f, 18.29f);
++			path.curveTo (54.52f, 22.42f, 54.39f, 27.08f, 52.34f, 30.90f);
++			path.curveTo (47.43f, 24.06f, 37.85f, 20.57f, 29.78f, 23.34f);
++			path.curveTo (25.94f, 24.54f, 22.47f, 26.87f, 19.87f, 29.94f);
++			path.curveTo (15.56f, 19.96f, 22.24f, 6.85f, 33.04f, 4.83f);
++			path.curveTo (33.82f, 4.67f, 34.61f, 4.57f, 35.41f, 4.53f);
++			path.closePath();
++			path.moveTo (16.34f, 15.78f);
++			path.curveTo (14.45f, 21.42f, 14.57f, 28.02f, 17.50f, 33.37f);
++			path.curveTo (14.54f, 38.79f, 13.51f, 45.40f, 15.56f, 51.31f);
++			path.curveTo (6.44f, 47.89f, 1.80f, 36.75f, 4.90f, 27.69f);
++			path.curveTo (6.60f, 22.24f, 10.89f, 17.59f, 16.34f, 15.78f);
++			path.closePath();
++			path.moveTo (56.28f, 15.81f);
++			path.curveTo (65.68f, 18.80f, 70.76f, 29.93f, 67.94f, 39.17f);
++			path.curveTo (66.32f, 45.03f, 61.68f, 50.04f, 55.81f, 51.78f);
++			path.curveTo (57.00f, 48.33f, 57.35f, 44.62f, 56.61f, 41.03f);
++			path.curveTo (56.22f, 37.40f, 53.29f, 34.25f, 56.26f, 30.98f);
++			path.curveTo (58.07f, 26.12f, 57.96f, 20.69f, 56.28f, 15.81f);
++			path.closePath();
++			path.moveTo (35.81f, 25.90f);
++			path.curveTo (43.76f, 25.85f, 50.93f, 31.93f, 52.77f, 39.57f);
++			path.curveTo (55.25f, 48.14f, 51.03f, 58.27f, 42.73f, 61.92f);
++			path.curveTo (35.28f, 65.52f, 25.73f, 62.48f, 21.37f, 55.55f);
++			path.curveTo (15.48f, 47.23f, 17.70f, 34.43f, 26.28f, 28.84f);
++			path.curveTo (29.08f, 26.94f, 32.44f, 25.90f, 35.81f, 25.90f);
++			path.closePath();
++			break;
++		case VESICLE:
++			path.moveTo (15, 281);
++			path.curveTo (6, 254, 0, 199, 0, 156);
++			path.curveTo (0, 113, 6, 49, 15, 21);
++			path.curveTo (15, 12, 26, 1, 38, 1);
++			path.curveTo (49, 1, 60, 11, 60, 23);
++			path.curveTo (59, 36, 50, 46, 32, 44);
++			path.curveTo (23, 71, 23, 102, 23, 144);
++			path.curveTo (23, 188, 23, 227, 32, 254);
++			path.curveTo (50, 254, 60, 265, 60, 278);
++			path.curveTo (60, 290, 46, 300, 36, 300);
++			path.curveTo (27, 300, 15, 289, 15, 281);
++			path.closePath();
++			break;
++		}
++		return path;
++	}
++
++	static private java.awt.Shape getRegularPolygon (int sides, double w, double h)
++	{
++		GeneralPath path = new GeneralPath();
++		for (int i = 0; i < sides; ++i)
++		{
++			double angle = Math.PI * 2 * i / sides;
++			double x = (w/2) * (1 + Math.cos (angle));
++			double y = (h/2) * (1 + Math.sin (angle));
++			if (i == 0)
++			{
++				path.moveTo ((float)x, (float)y);
++			}
++			else
++			{
++				path.lineTo ((float)x, (float)y);
++			}
++		}
++		path.closePath();
++		return path;
++	}
++
++}
+\ No newline at end of file
+
+Property changes on: trunk/src/core/org/pathvisio/view/GenMAPPShapes.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/src/core/org/pathvisio/view/SelectionBox.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/SelectionBox.java	(revision 1115)
++++ trunk/src/core/org/pathvisio/view/SelectionBox.java	(revision 1116)
+@@ -397,14 +397,18 @@
+ 		vLeft += vdx;
+ 		vTop += vdy;
+ 
++		Handle opposite = h;
+ 		if(vWidth < 0)
+ 		{
+-			negativeWidth(h);
++			opposite = getHorizontalOpposite(opposite);
++			negativeWidth();
+ 		}
+ 		if(vHeight < 0)
+ 		{
+-			negativeHeight(h);
++			opposite = getVerticalOpposite(opposite);
++			negativeHeight();
+ 		}
++		if (opposite != h) canvas.setPressedObject(opposite);
+ 
+ 		markDirty();
+ 		setHandleLocation();
+@@ -458,12 +462,7 @@
+ 		}
+ 	}
+ 
+-	/**
+-	 * This method implements actions performed when the width of
+-	 * the object becomes negative after adjusting to a handle
+-	 * @param h	The handle this object adjusted to
+-	 */
+-	public void negativeWidth(Handle h)
++	private Handle getHorizontalOpposite(Handle h)
+ 	{
+ 		Handle opposite = null;
+ 		if(h == handleNE) opposite = handleNW;
+@@ -471,12 +470,31 @@
+ 		else if(h == handleSW) opposite = handleSE;
+ 		else if(h == handleNW) opposite = handleNE;
+ 		assert (opposite != null);
+-		
++		return opposite;
++	}
++
++	private Handle getVerticalOpposite(Handle h)
++	{
++		Handle opposite = null;
++		if(h == handleNE) opposite = handleSE;
++		else if(h == handleSE) opposite = handleNE;
++		else if(h == handleSW) opposite = handleNW;
++		else if(h == handleNW) opposite = handleSW;
++		assert (opposite != null);
++		return opposite;
++	}
++	
++	/**
++	 * This method implements actions performed when the width of
++	 * the object becomes negative after adjusting to a handle
++	 * @param h	The handle this object adjusted to
++	 */
++	public void negativeWidth()
++	{
+ 		double vw = -vWidth;
+ 		double vsx = vLeft - vw;
+ 		vWidth = vw;
+ 		vLeft = vsx;
+-		canvas.setPressedObject(opposite);
+ 	}
+ 
+ 	/**
+@@ -484,20 +502,12 @@
+ 	 * the object becomes negative after adjusting to a handle
+ 	 * @param h	The handle this object adjusted to
+ 	 */
+-	public void negativeHeight(Handle h)
+-	{
+-		Handle opposite = null;
+-		if(h == handleNE) opposite = handleSE;
+-		else if(h == handleSE) opposite = handleNE;
+-		else if(h == handleSW) opposite = handleNW;
+-		else if(h == handleNW) opposite = handleSW;
+-		assert (opposite != null);
+-		
++	public void negativeHeight()
++	{		
+ 		double ht = -vHeight;
+ 		double sy = vTop - ht;
+ 		vHeight = ht;
+ 		vTop = sy;
+-		canvas.setPressedObject(opposite);
+ 	}
+ 
+ 	public void vMoveBy(double vdx, double vdy) 
+Index: trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java	(revision 1115)
++++ trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java	(revision 1116)
+@@ -49,7 +49,7 @@
+ 	 * Main method which will be carried out when running the program
+ 	 */
+ 	public static void main(String[] args)
+-	{		
++	{
+ 		boolean debugHandles = false;
+ 		for(String a : args) {
+ 			if(		a.equalsIgnoreCase("--MonitorHandles") ||
+@@ -70,7 +70,10 @@
+ 		initiate();
+ 		
+ 		window.setBlockOnOpen(true);
++
++		Logger.log.trace ("Open window");
+ 		window.open();
++		Logger.log.trace ("Window closed");
+ 		
+ 		//Perform exit operations
+ 		//TODO: implement PropertyChangeListener and fire exit property when closing
+@@ -94,15 +97,18 @@
+ 			Logger.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
+ 		} catch(Exception e) {}
+ 		Logger.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
+-		
++
++		Logger.log.trace ("Log initialized");
+ 		//load the preferences
+ 		loadPreferences();
++		Logger.log.trace ("Preferences loaded");
+ 		
+ 		//initiate Gene database (to load previously used gdb)
+ 		Gdb.init();
+ 		
+ 		//load visualizations and plugins
+ 		loadVisualizations();
++		Logger.log.trace ("Plugins loaded");
+ 		
+ 		//create data directories if they don't exist yet
+ 		createDataDirectories();

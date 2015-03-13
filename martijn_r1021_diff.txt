@@ -1,0 +1,242 @@
+Index: trunk/pathvisio.sh
+===================================================================
+--- trunk/pathvisio.sh	(revision 1020)
++++ trunk/pathvisio.sh	(revision 1021)
+@@ -81,9 +81,9 @@
+ 
+ if [ $RUN_MODE = "DIRECT" ]; then
+ 	if [ $USE_EXPERIMENTAL = "0" ]; then
+-		java -cp $MYCLASSPATH1 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS
++		jdb -classpath $MYCLASSPATH1 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS
+ 	elif [ $USE_EXPERIMENTAL = "1" ]; then
+-		java -cp $MYCLASSPATH2 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS -ur
++		java -classpath $MYCLASSPATH2 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS -ur
+ 	fi	
+ elif [ $RUN_MODE = "WEBSTART" ]; then
+ 	if [ $USE_EXPERIMENTAL = "0" ]; then
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1020)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1021)
+@@ -370,17 +370,10 @@
+ 	}
+ 
+ 	/**
+-	   Fill out a single PathwayElement based on a piece of Jdom tree. Used also by Patch utility
++	   Create a single PathwayElement based on a piece of Jdom tree. Used also by Patch utility
+ 	 */
+-	public static void mapElement(PathwayElement o, Element e) throws ConverterException
++	public static PathwayElement mapElement(Element e) throws ConverterException
+ 	{
+-	}
+-
+-	/**
+-	   Read a piece of Jdom tree, create a PathwayElement based on that and add it to the Pathway.
+-	 */
+-	private static void mapElement(Element e, Pathway p) throws ConverterException
+-	{
+ 		String tag = e.getName();
+ 		int ot = ObjectType.getTagMapping(tag);
+ 		if (ot == -1)
+@@ -388,29 +381,11 @@
+ 			// do nothing. This could be caused by
+ 			// tags <comment> or <graphics> that appear
+ 			// as subtags of <pathway>
+-			return;
++			return null;
+ 		}
+ 		
+-		PathwayElement o;
+-		if (ot == ObjectType.MAPPINFO)
+-		{
+-			o = p.getMappInfo();
+-		}
+-		else if (ot == ObjectType.INFOBOX)
+-		{
+-			o = p.getInfoBox();
+-		} 
+-		else if (ot == ObjectType.BIOPAX) 
+-		{
+-			o = p.getBiopax();
+-		}
+-		else
+-		{
+-			o = new PathwayElement(ot);
+-			p.add (o);
+-		}
++		PathwayElement o = new PathwayElement(ot);
+ 
+-		mapElement (o, e);
+ 		switch (o.getObjectType())
+ 		{
+ 			case ObjectType.DATANODE:
+@@ -468,7 +443,20 @@
+ 			default:
+ 				throw new ConverterException("Invalid ObjectType'" + tag + "'");
+ 		}
++		return o;
+ 	}
++
++	/**
++	   Read a piece of Jdom tree, create a PathwayElement based on that and add it to the Pathway.
++	 */
++	private static void mapElement(Element e, Pathway p) throws ConverterException
++	{
++		PathwayElement o = mapElement (e);
++		if (o != null)
++		{
++			p.add (o);
++		}
++	}
+ 	
+ 	private static void mapLineData(PathwayElement o, Element e) throws ConverterException
+ 	{
+@@ -1053,12 +1041,15 @@
+ 			"White", "Yellow", "Transparent"
+ 		});
+ 
+-	public void doImport(File file, Pathway pathway) throws ConverterException {
+-		pathway.readFromXml(file, true);
+-}
+-	public void doExport(File file, Pathway pathway) throws ConverterException {
+-		pathway.writeToXml(file, true);
++	public void doImport(File file, Pathway pathway) throws ConverterException
++	{
++		readFromXml(pathway, file, true);
+ 	}
++
++	public void doExport(File file, Pathway pathway) throws ConverterException
++	{
++		writeToXml(pathway, file, true);
++	}
+ 	
+ 	public String[] getExtensions() {
+ 		return new String[] { "gpml", "xml" };
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1020)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1021)
+@@ -96,16 +96,6 @@
+ 	{
+ 		return mappInfo;
+ 	}
+-
+-	/**
+-	   overwrite current mappInfo
+-	 */
+-	public void setMappInfo(PathwayElement value)
+-	{
+-		assert (value != null);
+-		assert (value.getObjectType() == ObjectType.MAPPINFO);
+-		mappInfo = value;
+-	}
+ 	
+ 	/**
+ 	 * get the one and only InfoBox object.
+@@ -117,14 +107,6 @@
+ 		return infoBox;
+ 	}
+ 
+-	public void setInfoBox(PathwayElement value)
+-	{
+-		assert (value != null);
+-		assert (value.getObjectType() == ObjectType.INFOBOX);
+-	    infoBox = value;
+-	}
+-
+-
+ 	/**
+ 	   note: may return null.
+ 	 */
+@@ -139,7 +121,6 @@
+ 		this.add(biopax);
+ 	}
+ 
+-
+ 	/**
+ 	 * Add a PathwayElement to this Pathway.
+ 	 * takes care of setting parent and removing from possible previous
+@@ -196,6 +177,7 @@
+ 		oldElt.setParent (null);
+ 		newElt.addListener (this);
+ 		newElt.setParent (this);
++		dataObjects.add(newElt);
+ 		fireObjectModifiedEvent(new PathwayEvent(newElt, PathwayEvent.ADDED));		
+ 	}
+ 	
+Index: trunk/src/core/org/pathvisio/view/InfoBox.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/InfoBox.java	(revision 1020)
++++ trunk/src/core/org/pathvisio/view/InfoBox.java	(revision 1021)
+@@ -26,6 +26,13 @@
+ 
+ import org.pathvisio.model.PathwayElement;
+ 
++/**
++ * //TODO: view.InfoBox corresponds in some ways to 
++ * model.PathwayElement(ObjectType.MAPPINFO) and in some ways to 
++ * model.PathwayElement(ObjectType.INFOBOX). 
++ * This confusion is rooted in inconsistencies in GPML. 
++ * This should be cleaned up one day.
++ */
+ public class InfoBox extends Graphics {
+ 	static final int V_SPACING = 5;
+ 	static final int H_SPACING = 10;
+Index: trunk/src/core/org/pathvisio/view/LinAlg.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/LinAlg.java	(revision 1020)
++++ trunk/src/core/org/pathvisio/view/LinAlg.java	(revision 1021)
+@@ -23,6 +23,14 @@
+ public class LinAlg 
+ {
+ 	
++	/**
++	 * Determines angle between two vectors defined by p1 and p2 
++	 * Both vectors start at 0.0
++	 * 
++	 * @param p1 start point of vector
++	 * @param p2 end point of vector
++	 * @return angle in radians
++	 */
+ 	public static double angle(Point p1, Point p2) 
+ 	{
+ 		//Angle:
+Index: trunk/src/core/org/pathvisio/view/Line.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Line.java	(revision 1020)
++++ trunk/src/core/org/pathvisio/view/Line.java	(revision 1021)
+@@ -181,20 +181,12 @@
+ 				
+ 		if(h != null) {
+ 			AffineTransform f = new AffineTransform();
+-			f.rotate(-getAngle(xs, ys, xe, ye), xe, ye);
++			f.rotate(Math.atan2 (ye - ys, xe - xs), xe, ye);
+ 			h = f.createTransformedShape(h);
+ 		}
+ 		return h;
+ 	}
+ 	
+-	private double getAngle(double xs, double ys, double xe, double ye) {
+-		if(xs == xe && ys == ye) return 0; //Unable to determine direction
+-		Point2D ps = new Point2D.Double(xe - xs, ye - ys);
+-		Point2D pe = new Point2D.Double(1, 0);
+-		
+-		return LinAlg.angle(new LinAlg.Point(ps.getX(), ps.getY()), new LinAlg.Point(pe.getX(), pe.getY()));
+-	}
+-	
+ 	private Shape getArrowHead(double xs, double ys, double xe, double ye, double w, double h) {
+ 		int[] xpoints = new int[] { (int)xe, (int)(xe - w), (int)(xe - w) };
+ 		int[] ypoints = new int[] { (int)ye, (int)(ye - h), (int)(ye + h) };
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1020)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1021)
+@@ -49,7 +49,7 @@
+ 			if (e.getName().equals("Modify"))
+ 			{
+ 				Modification mod = new Modifcation();
+-				GpmlFormat.
++				GpmlFormat.mapElement (e)
+ 			}
+ 		}
+ 	}

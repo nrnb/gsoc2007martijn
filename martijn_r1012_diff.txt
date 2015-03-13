@@ -1,0 +1,184 @@
+Index: trunk/pathvisio.sh
+===================================================================
+--- trunk/pathvisio.sh	(revision 1011)
++++ trunk/pathvisio.sh	(revision 1012)
+@@ -9,7 +9,7 @@
+ # Set USE_EXPERIMENTAL to 1 if you want to run with Data visualizatoin and R mode
+ USE_EXPERIMENTAL=0
+ 
+-while getopts ":gerd" options; do
++while getopts ":gerds" options; do
+ 	case $options in
+ 		g )
+ 			RUN_MODE=DIRECT
+@@ -19,22 +19,26 @@
+ 		e )
+ 			USE_EXPERIMENTAL=1
+ 			;;
++		s )
++			USE_EXPERIMENTAL=0
++			;;
+ 		r )
+ 			RUN_MODE=WEBSTART
+ 			MAIN_CLASS=
+-			BASE_URL=http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart
++			BASE_URL=http://blog.bigcat.unimaas.nl/~gmmlvisio
+ 			;;
+ 		d )
+ 			RUN_MODE=WEBSTART
+ 			MAIN_CLASS=
+-			BASE_URL=http://blog.bigcat.unimaas.nl/~gmmlvisio
++			BASE_URL=http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart
+ 			;;
+ 		\? )
+-			echo "Usage: `basename $0` [-g|-r|-d] [-e] [-?]"
++			echo "Usage: `basename $0` [-g|-r|-d] [-e|-s] [-?]"
+ 			echo "  -g : Use swing instead of swt"
+ 			echo "  -r : Use webstart, latest stable release"
+ 			echo "  -d : Use webstart, daily build"
+ 			echo "  -e : Turn on experimental features (Data visualization, statistics)"
++			echo "  -s : Turn off experimental features (default)"
+ 			echo "  -? : show this help message"
+ 			exit;
+ 			;;
+Index: trunk/src/v1/org/pathvisio/Globals.java
+===================================================================
+--- trunk/src/v1/org/pathvisio/Globals.java	(revision 1011)
++++ trunk/src/v1/org/pathvisio/Globals.java	(revision 1012)
+@@ -26,5 +26,7 @@
+ 	public static final String APPLICATION_NAME = "PathVisio";
+ 	public static final String APPLICATION_VERSION_NAME = "PathVisio 1.0 release candidate 2";
+ 	public static final String HELP_URL = "http://wiki.bigcat.unimaas.nl/pathvisio/Help";
++	// for inclusion in certain error messages.
++	public static final String DEVELOPER_EMAIL = "martijn.vaniersel@bigcat.unimaas.nl"; 
+ 	public static final boolean fUseExperimentalFeatures = false;
+ }
+Index: trunk/src/swing/org/pathvisio/gui/swing/SwingEngine.java
+===================================================================
+--- trunk/src/swing/org/pathvisio/gui/swing/SwingEngine.java	(revision 1011)
++++ trunk/src/swing/org/pathvisio/gui/swing/SwingEngine.java	(revision 1012)
+@@ -23,6 +23,7 @@
+ import javax.swing.JOptionPane;
+ 
+ import org.pathvisio.Engine;
++import org.pathvisio.Globals;
+ import org.pathvisio.model.ConverterException;
+ import org.pathvisio.view.VPathwayWrapper;
+ import org.pathvisio.view.swing.VPathwaySwing;
+@@ -49,7 +50,7 @@
+ 					"Please note that the Gpml format has changed as of March 2007. " +
+ 					"The standard pathway set can be re-downloaded from http://pathvisio.org " +
+ 					"Non-standard pathways need to be recreated or upgraded. " +
+-					"Please contact the authors at martijn.vaniersel@bigcat.unimaas.nl if you need help with this.\n" +
++					"Please contact the authors at " + Globals.DEVELOPER_EMAIL + " if you need help with this.\n" +
+ 					"\nSee error log for details");
+ 			Engine.log.error("Unable to open Gpml file", e);
+ 		}
+Index: trunk/src/v2/org/pathvisio/Globals.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/Globals.java	(revision 1011)
++++ trunk/src/v2/org/pathvisio/Globals.java	(revision 1012)
+@@ -26,5 +26,7 @@
+ 	public static final String APPLICATION_NAME = "PathVisio";
+ 	public static final String APPLICATION_VERSION_NAME = "PathVisio 2.0 (experimental)";
+ 	public static final String HELP_URL = "http://wiki.bigcat.unimaas.nl/pathvisio/Help_v2";
++	// for inclusion in certain error messages.
++	public static final String DEVELOPER_EMAIL = "martijn.vaniersel@bigcat.unimaas.nl"; 
+ 	public static final boolean fUseExperimentalFeatures = true;
+ }
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1011)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1012)
+@@ -691,7 +691,7 @@
+ 		o.setShapeType (ShapeType.fromGpmlName(getAttribute("Shape", "Type", e)));
+     	Element graphics = e.getChild("Graphics", e.getNamespace());
+     	
+-    	String rotation = graphics.getAttributeValue("Rotation");
++    	String rotation = getAttribute("Shape.Graphics", "Rotation", graphics);
+     	double result;
+     	if (rotation.equals("Top"))
+     	{
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1011)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1012)
+@@ -271,7 +271,7 @@
+ 		{
+ 			throw new IllegalArgumentException ("id '" + id + "' is not unique");
+ 		}
+-	ids.add (id);
++		ids.add (id);
+ 	
+ 	}
+ 	
+@@ -473,6 +473,10 @@
+ 		{
+ 			throw new ConverterException (e);
+ 		}
++		catch(NullPointerException e)
++		{
++			throw new ConverterException (e);
++		}
+ 	}
+ 	
+ 	public void readFromMapp (File file) throws ConverterException
+Index: trunk/src/core/org/pathvisio/view/swing/SwingKeyEvent.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/swing/SwingKeyEvent.java	(revision 1011)
++++ trunk/src/core/org/pathvisio/view/swing/SwingKeyEvent.java	(revision 1012)
+@@ -24,7 +24,6 @@
+ 	public SwingKeyEvent(KeyEvent e) {
+ 		super(e.getSource(), convertKeyCode(e), convertType(e), e.getModifiers());
+ 		awtEvent = e;
+-		System.out.println(getKeyCode());
+ 	}
+ 	
+ 	protected static int convertKeyCode(KeyEvent e) {
+Index: trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java	(revision 1011)
++++ trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java	(revision 1012)
+@@ -123,12 +123,10 @@
+ 	}
+ 
+ 	public void keyPressed(KeyEvent e) {
+-		System.out.println("Key pressed........!");
+ 		child.keyPressed(new SwingKeyEvent(e));
+ 	}
+ 
+ 	public void keyReleased(KeyEvent e) {
+-		System.out.println("Key released......!");
+ 		child.keyReleased(new SwingKeyEvent(e));
+ 	}
+ 
+Index: trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java	(revision 1011)
++++ trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java	(revision 1012)
+@@ -307,14 +307,22 @@
+ 						"Please note that the Gpml format has changed as of March 2007. " +
+ 						"The standard pathway set can be re-downloaded from http://pathvisio.org " +
+ 						"Non-standard pathways need to be recreated or upgraded. " +
+-						"Please contact the authors at martijn.vaniersel@bigcat.unimaas.nl if you need help with this.\n" +
++						"Please contact the authors at " + Globals.DEVELOPER_EMAIL + " if you need help with this.\n" +
+ 						"\nSee error log for details");
+ 					Engine.log.error("Unable to open Gpml file", e);
+ 				}
+ 				else
+ 				{
+-					MessageDialog.openError(getWindow().getShell(), 
+-											"Unable to open Gpml file", e.getClass() + e.getMessage());
++					//TODO: refactor these error messages,
++					// so it's not redundant with SwingEngine.
++					MessageDialog.openError(
++						getWindow().getShell(), 
++						"Unable to open Gpml file",
++						"Unable to open Gpml file\n\n" +
++						"Check that the file you're trying to open really is a "+
++						"Pathway in the Gpml format. If the problem persists, please contact " +
++						"the developers at " + Globals.DEVELOPER_EMAIL + ". Please include the " +
++						"file you're trying to open and the error log.");
+ 					Engine.log.error("Unable to open Gpml file", e);
+ 				}
+ 			}

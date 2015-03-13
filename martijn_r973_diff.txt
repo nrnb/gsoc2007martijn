@@ -1,0 +1,214 @@
+Index: trunk/pv_daily.sh
+===================================================================
+--- trunk/pv_daily.sh	(revision 972)
++++ trunk/pv_daily.sh	(revision 973)
+@@ -1,4 +0,0 @@
+-#!/bin/sh
+-export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-export LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH
+-javaws "http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart/pathvisio_v1.jnlp"
+\ No newline at end of file
+Index: trunk/pv2_release.sh
+===================================================================
+--- trunk/pv2_release.sh	(revision 972)
++++ trunk/pv2_release.sh	(revision 973)
+@@ -1,5 +0,0 @@
+-#!/bin/sh
+-export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-export LD_LIBRARY_PATH=/usr/lib/R/lib:/usr/lib/firefox:$LD_LIBRARY_PATH
+-export R_HOME=/usr/lib/R
+-javaws "http://blog.bigcat.unimaas.nl/~gmmlvisio/pathvisio_v2.jnlp"
+\ No newline at end of file
+Index: trunk/CLASSPATH
+===================================================================
+--- trunk/CLASSPATH	(revision 972)
++++ trunk/CLASSPATH	(revision 973)
+@@ -1,30 +0,0 @@
+-lib/JRI.jar
+-lib/BrowserLauncher.jar
+-lib/org.eclipse.equinox.common.jar
+-lib/org.eclipse.equinox.supplement.jar
+-lib/org.eclipse.jface.jar
+-lib/swt-linux-lib/swt.jar
+-lib/org.eclipse.core.commands.jar
+-lib/jdom.jar
+-build/v2
+-lib/derby.jar
+-lib/swt-linux-lib.jar
+-lib/resources.jar
+-lib/paxtools.jar
+-lib/BrowserLauncher.jar
+-lib/batik/batik-awt-util.jar
+-lib/batik/batik-ext.jar
+-lib/batik/batik-script.jar
+-lib/batik/batik-util.jar
+-lib/batik/batik-dom.jar
+-lib/batik/xml-apis.jar
+-lib/batik/batik-xml.jar
+-lib/batik/batik-extension.jar
+-lib/batik/pdf-transcoder.jar
+-lib/batik/batik-css.jar
+-lib/batik/batik-transcoder.jar
+-lib/batik/batik-svg-dom.jar
+-lib/batik/batik-parser.jar
+-lib/batik/batik-svggen.jar
+-lib/batik/batik-bridge.jar
+-lib/batik/batik-gvt.jar
+Index: trunk/pv_release.sh
+===================================================================
+--- trunk/pv_release.sh	(revision 972)
++++ trunk/pv_release.sh	(revision 973)
+@@ -1,4 +0,0 @@
+-#!/bin/sh
+-export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-export LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH
+-javaws "http://blog.bigcat.unimaas.nl/~gmmlvisio/pathvisio_v1.jnlp"
+\ No newline at end of file
+Index: trunk/pathvisio2.sh
+===================================================================
+--- trunk/pathvisio2.sh	(revision 972)
++++ trunk/pathvisio2.sh	(revision 973)
+@@ -1,9 +0,0 @@
+-#!/bin/sh
+-export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox:/usr/lib/R/lib
+-export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-export R_HOME=/usr/lib/R
+-
+-# read classpath from file named CLASSPATH
+-MYCLASSPATH=`perl -e 'while (<>) { chomp; push @l, $_ } print join ":", @l' CLASSPATH`
+-
+-java -cp $MYCLASSPATH -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.GuiMain -ur
+Index: trunk/pv2_daily.sh
+===================================================================
+--- trunk/pv2_daily.sh	(revision 972)
++++ trunk/pv2_daily.sh	(revision 973)
+@@ -1,5 +0,0 @@
+-#!/bin/sh
+-export MOZILLA_FIVE_HOME=/usr/lib/firefox
+-export LD_LIBRARY_PATH=/usr/lib/R/lib:/usr/lib/firefox:$LD_LIBRARY_PATH
+-export R_HOME=/usr/lib/R
+-javaws "http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart/pathvisio_v2.jnlp"
+\ No newline at end of file
+Index: trunk/pathvisio.sh
+===================================================================
+--- trunk/pathvisio.sh	(revision 972)
++++ trunk/pathvisio.sh	(revision 973)
+@@ -1,8 +1,50 @@
+-#!/bin/sh
++#!/bin/bash
++
++# RUN_MODE can be "DIRECT" or "WEBSTART"
++RUN_MODE=DIRECT
++# MAIN_CLASS contains the main class to run when RUN_MODE is DIRECT
++MAIN_CLASS=org.pathvisio.gui.swt.GuiMain
++# BASE_URL contains the webstart url (without pathvisio_v1.jnlp or pathvisio_v2.jnlp)
++BASE_URL=
++# Set USE_EXPERIMENTAL to 1 if you want to run with Data visualizatoin and R mode
++USE_EXPERIMENTAL=0
++
++while getopts ":gerd" options; do
++	case $options in
++		g )
++			RUN_MODE=DIRECT
++			MAIN_CLASS=org.pathvisio.gui.swing.GuiMain
++			BASE_URL=
++			;;
++		e )
++			USE_EXPERIMENTAL=1
++			;;
++		r )
++			RUN_MODE=WEBSTART
++			MAIN_CLASS=
++			BASE_URL=http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart
++			;;
++		d )
++			RUN_MODE=WEBSTART
++			MAIN_CLASS=
++			BASE_URL=http://blog.bigcat.unimaas.nl/~gmmlvisio
++			;;
++		\? )
++			echo "Usage: `basename $0` [-g|-r|-d] [-e] [-?]"
++			echo "  -g : Use swing instead of swt"
++			echo "  -r : Use webstart, latest stable release"
++			echo "  -d : Use webstart, daily build"
++			echo "  -e : Turn on experimental features (Data visualization, statistics)"
++			echo "  -? : show this help message"
++			exit;
++			;;
++	esac
++done
++
+ export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox
+ export MOZILLA_FIVE_HOME=/usr/lib/firefox
+ 
+-MYCLASSPATH=lib/JRI.jar:\
++MYCLASSPATHBASE=lib/JRI.jar:\
+ lib/BrowserLauncher.jar:\
+ lib/org.eclipse.equinox.common.jar:\
+ lib/org.eclipse.equinox.supplement.jar:\
+@@ -10,7 +52,6 @@
+ lib/swt-linux-lib/swt.jar:\
+ lib/org.eclipse.core.commands.jar:\
+ lib/jdom.jar:\
+-build/v1:\
+ lib/derby.jar:\
+ lib/swt-linux-lib.jar:\
+ lib/resources.jar:\
+@@ -31,4 +72,19 @@
+ lib/batik/batik-bridge.jar:\
+ lib/batik/batik-gvt.jar
+ 
+-java -cp $MYCLASSPATH -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.GuiMain 
++MYCLASSPATH1=$MYCLASSPATHBASE:build/v1
++MYCLASSPATH2=$MYCLASSPATHBASE:build/v2
++
++if [ $RUN_MODE = "DIRECT" ]; then
++	if [ $USE_EXPERIMENTAL = "0" ]; then
++		java -cp $MYCLASSPATH1 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS
++	elif [ $USE_EXPERIMENTAL = "1" ]; then
++		java -cp $MYCLASSPATH2 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS -ur
++	fi	
++elif [ $RUN_MODE = "WEBSTART" ]; then
++	if [ $USE_EXPERIMENTAL = "0" ]; then
++		javaws "$BASE_URL/pathvisio_v1.jnlp"
++	elif [ $USE_EXPERIMENTAL = "1" ]; then
++		javaws "$BASE_URL/pathvisio_v2.jnlp" -ur
++	fi
++fi
+\ No newline at end of file
+Index: trunk/build.xml
+===================================================================
+--- trunk/build.xml	(revision 972)
++++ trunk/build.xml	(revision 973)
+@@ -72,8 +72,7 @@
+ 
+ 	<target name="compile-v2" depends="prepare,resources-jar" description="Compile all sources">
+ 		<javac srcdir="." 
+-               includes="src/v2/**,src/core/**,src/swt/**"
+-			   excludes="core/org/pathvisio/view/VPathwayOld.java"
++               includes="src/v2/**,src/core/**,src/swt/**,src/swing/**"
+ 			   
+                destdir="${build.v2.dir}">
+           <classpath refid="project.v2.class.path"/>
+Index: trunk/run_webstart.sh
+===================================================================
+--- trunk/run_webstart.sh	(revision 0)
++++ trunk/run_webstart.sh	(revision 973)
+@@ -0,0 +1,8 @@
++#!/bin/sh
++
++# Run the stable release version through webstart
++# For running the daily build, or enabling experimental features, see pathvisio.sh
++
++export MOZILLA_FIVE_HOME=/usr/lib/firefox
++export LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH
++javaws "http://blog.bigcat.unimaas.nl/~gmmlvisio/pathvisio_v1.jnlp"
+\ No newline at end of file
+
+Property changes on: trunk/run_webstart.sh
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+Name: svn:executable
+   + *
+

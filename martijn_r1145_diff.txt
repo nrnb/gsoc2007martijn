@@ -1,0 +1,517 @@
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GlassPane.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GlassPane.java	(revision 1144)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GlassPane.java	(revision 1145)
+@@ -16,6 +16,7 @@
+ //
+ package org.pathvisio.gpmldiff;
+ 
++import java.awt.Dimension;
+ import java.awt.AWTEvent;
+ import java.awt.Color;
+ import java.awt.Cursor;
+@@ -59,7 +60,7 @@
+  */
+ class GlassPane extends JPanel implements AWTEventListener
+ {
+-    private final JFrame frame;
++    private final JPanel frame;
+     private Point mousePos = new Point();
+ 
+ 	// baloon margin is both the horizontal and vertical margin.
+@@ -83,7 +84,7 @@
+ 		}
+ 	}
+ 	
+-    public GlassPane(JFrame frame)
++    public GlassPane(JPanel frame)
+ 	{
+         super(null);
+         this.frame = frame;
+@@ -229,7 +230,12 @@
+ 
+ 		// draw lines
+ 
++		Shape oldClip = g2.getClip();
+ 		
++		g2.setStroke (new BasicStroke (5));
++		g2.setColor (Color.YELLOW);
++
++		clipView (g2, oldView);
+ 		Point p = relativeToView (x1, y1, oldView);
+ 		GeneralPath path = new GeneralPath ();
+ 		Point s = new Point (
+@@ -245,7 +251,12 @@
+ 			(float)p.getX(),
+ 			(float)p.getY()
+ 			);
++		g2.draw (path);
++
++		g2.setClip(oldClip);
++		clipView (g2, newView);
+ 		p = relativeToView (x2, y2, newView);
++		path = new GeneralPath ();
+ 		s = new Point (
+ 			(int)(hintPos.getX() + baloonWidth),
+ 			(int)(hintPos.getY() + baloonHeight / 2)
+@@ -259,8 +270,6 @@
+ 			(float)p.getX(),
+ 			(float)p.getY());
+ 			
+-		g2.setStroke (new BasicStroke (5));
+-		g2.setColor (Color.YELLOW);
+ 		g2.draw (path);
+ 		
+ 		g2.dispose();
+@@ -268,6 +277,7 @@
+ 
+ 	Point relativeToView (double x, double y, JViewport view)
+ 	{
++		// TODO: same can be achieved simple with SwingUtilities.convertRectangle
+ 		Point p = view.getLocationOnScreen();
+ 		Point p2 = getLocationOnScreen();
+ 		Point p3 = view.getViewPosition();
+@@ -275,6 +285,35 @@
+ 		int ry = (int)(p.getY() - p2.getY() - p3.getY() + (y * zoomFactor / 15.0));
+ 		return new Point (rx, ry);
+ 	}
++
++	void clipView (Graphics2D g2d, JViewport view)
++	{
++		Point p = view.getLocationOnScreen();
++		Dimension d = view.getSize();
++		Point p2 = getLocationOnScreen();
++		// TODO: same can be achieved simple with SwingUtilities.convertPoint
++		g2d.setClip (
++			(int)(p.getX() - p2.getX()),
++			(int)(p.getY() - p2.getY()),
++			(int)(d.getWidth()),
++			(int)(d.getHeight())
++			);
++	}
++
++	/**
++	   Test if the mouse touches last known shape location, and
++	   repaints if so.
++	 */
++	private void testMouseCursor()
++	{
++		Shape bg = getHintShape();
++		if (mousePos != null && bg.contains(mousePos))
++		{
++			// toggle alignTop
++			alignTop = !alignTop;
++			repaint();
++		}
++	}
+ 	
+     public void eventDispatched(AWTEvent event)
+ 	{
+@@ -291,10 +330,10 @@
+             }
+ 			else
+ 			{
+-                MouseEvent converted = SwingUtilities.convertMouseEvent(me.getComponent(), me, frame.getGlassPane());
++                MouseEvent converted = SwingUtilities.convertMouseEvent(me.getComponent(), me, this);
+                 mousePos = converted.getPoint();
++				testMouseCursor();
+ 			}
+-            repaint();
+         }
+     }
+ 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java	(revision 1144)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java	(revision 1145)
+@@ -19,7 +19,7 @@
+ import java.io.File;
+ import java.io.IOException;
+ import java.awt.*;
+-import java.awt.event.ActionEvent;
++import java.awt.event.*;
+ import javax.swing.*;
+ import org.pathvisio.debug.Logger;
+ import org.pathvisio.model.ConverterException;
+@@ -28,15 +28,14 @@
+ import org.pathvisio.view.VPathwayEvent;
+ import org.pathvisio.view.VPathwayListener;
+ import org.pathvisio.view.swing.VPathwaySwing;
++import org.pathvisio.gui.swing.WrapLayout;
+ 
+-class GpmlDiffWindow extends JFrame implements VPathwayListener
++class GpmlDiffWindow extends JPanel implements VPathwayListener
+ {
+-	private static final int WINDOW_WIDTH = 1000;
+-	private static final int WINDOW_HEIGHT = 500;
+ 
+ 	private JScrollPane[] pwyPane = new JScrollPane[2];
+-	private JMenuBar menubar;
+-
++	private JToolBar toolbar = null;
++	
+ 	public static final int PWY_OLD = 0;
+ 	public static final int PWY_NEW = 1;
+ 
+@@ -101,9 +100,9 @@
+ 	private class LoadPwyAction extends AbstractAction
+ 	{
+ 		private int pwyType;
+-		private JFrame parent;
++		private JPanel parent;
+ 		
+-		public LoadPwyAction (JFrame window, int value)
++		public LoadPwyAction (JPanel window, int value)
+ 		{
+ 			super ("Load " + ((value == PWY_OLD) ? "old" : "new")  + " pathway");
+ 			String s = (value == PWY_OLD) ? "old" : "new";
+@@ -126,11 +125,11 @@
+ 			}
+ 		}
+ 	}
+-
++/*
+ 	class CloseAction extends AbstractAction
+ 	{
+-		JFrame parent;
+-		public CloseAction(JFrame _parent)
++		JPanel parent;
++		public CloseAction(JPanel _parent)
+ 		{
+ 			super("Close");
+ 			parent = _parent;
+@@ -142,7 +141,7 @@
+ 			System.exit(0);
+ 		}
+ 	}
+-
++*/
+ 	class CenterAction extends AbstractAction
+ 	{
+ 		public CenterAction()
+@@ -192,54 +191,90 @@
+ 		}
+ 	}
+ 
+-	void addMenuActions()
+-	{
+-		JMenu filemenu = new JMenu ("File");
+-		filemenu.add (new LoadPwyAction(this, PWY_OLD));
+-		filemenu.add (new LoadPwyAction(this, PWY_NEW));
+-		filemenu.add (new CloseAction(this));
++	void addToolbarActions()
++	{		
++		toolbar.setLayout (new WrapLayout (1, 1));
+ 
+-		JMenu viewmenu = new JMenu ("View");
+-		viewmenu.add (new ZoomAction(VPathway.ZOOM_TO_FIT));
+-		viewmenu.add (new ZoomAction(30));
+-		viewmenu.add (new ZoomAction(50));
+-		viewmenu.add (new ZoomAction(75));
+-		viewmenu.add (new ZoomAction(100));
+-		viewmenu.add (new ZoomAction(120));
+-		viewmenu.addSeparator();
+-		viewmenu.add (new CenterAction());
+-		
+-		menubar.add (filemenu);
+-		menubar.add (viewmenu);					  
++		toolbar.add(new JLabel("Zoom:", JLabel.LEFT));
++		JComboBox combo = new JComboBox(new Object[] {
++				new ZoomAction(VPathway.ZOOM_TO_FIT),
++				new ZoomAction(20),
++				new ZoomAction(30),
++				new ZoomAction(50),
++				new ZoomAction(75),
++				new ZoomAction(100),
++				new ZoomAction(120),
++				new ZoomAction(150) });
++		combo.setMaximumSize(combo.getPreferredSize());
++		combo.setEditable(true);
++		combo.setSelectedIndex(5); // 100%
++		combo.addActionListener(new ActionListener()
++		{
++			public void actionPerformed(ActionEvent e)
++			{
++				JComboBox combo = (JComboBox) e.getSource();
++				Object s = combo.getSelectedItem();
++				if (s instanceof ZoomAction)
++				{
++					((ZoomAction) s).actionPerformed(e);
++				}
++				else if (s instanceof String)
++				{
++					String zs = (String) s;
++					try
++					{
++						double zf = Double.parseDouble(zs);
++						new ZoomAction(zf).actionPerformed(e);
++					}
++					catch (Exception ex)
++					{
++						// Ignore bad input
++					}
++				}
++			}
++		});
++		toolbar.add (combo);
++
++
++//		toolbar.addSeparator();
++//		toolbar.add (new CenterAction());
+ 	}
++
++
++	void addFileActions()
++	{
++		toolbar.addSeparator();
++		toolbar.add (new LoadPwyAction(this, PWY_OLD));
++		toolbar.add (new LoadPwyAction(this, PWY_NEW));
++	}
+ 	
+-	GpmlDiffWindow ()
++	GpmlDiffWindow (RootPaneContainer parent)
+ 	{
+-		super ();
++		setLayout (new BorderLayout ());
+ 
+-		setSize (WINDOW_WIDTH, WINDOW_HEIGHT);
+-		Container contents = getContentPane();
+-		contents.setLayout (new BoxLayout(contents, BoxLayout.X_AXIS));
+-		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
++		JPanel subpanel = new JPanel();
++ 		subpanel.setLayout (new BoxLayout(subpanel, BoxLayout.X_AXIS));
++		add (subpanel, BorderLayout.CENTER);
++		
++		toolbar = new JToolBar();
++		addToolbarActions();
++		add(toolbar, BorderLayout.PAGE_START);
+ 
+ 		glassPane = new GlassPane(this);
+-		setGlassPane (glassPane);
++		parent.setGlassPane (glassPane);
+ 		glassPane.setVisible(true);
+ 		Toolkit.getDefaultToolkit().addAWTEventListener(
+ 			glassPane, AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
+ 		
+-		menubar = new JMenuBar();
+-		addMenuActions ();
+-		setJMenuBar (menubar);
+ 
+ 		for (int i = 0; i < 2; ++i)
+ 		{
+ 			pwyPane[i] = new JScrollPane();
+ 		}
+ 
+-		contents.add (pwyPane[PWY_OLD]);
++		subpanel.add (pwyPane[PWY_OLD]);
+ 		pwyPane[PWY_OLD].setPreferredSize (new Dimension (400, 300));
+-		contents.add (pwyPane[PWY_NEW]);
++		subpanel.add (pwyPane[PWY_NEW]);
+ 		pwyPane[PWY_NEW].setPreferredSize (new Dimension (400, 300));
+ 		
+ 		glassPane.setViewPorts (pwyPane[0].getViewport(), pwyPane[1].getViewport());
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/AppletMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/AppletMain.java	(revision 1144)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/AppletMain.java	(revision 1145)
+@@ -18,20 +18,49 @@
+ 
+ import javax.swing.*;
+ import java.awt.*;
++import java.net.URL;
++import java.io.File;
++import org.pathvisio.util.FileUtils;
++import org.pathvisio.Engine;
++import org.pathvisio.debug.Logger;
+ 
+ public class AppletMain extends JApplet
+ {
+-	String oldPwy, newPwy;
++	GpmlDiffWindow panel;
+ 	
++	void openUrl(int pwyType, String param)
++	{
++		try
++		{
++			URL url = new URL (param);
++		
++			String protocol = url.getProtocol();
++			File f = null;
++			if(protocol.equals("file"))
++			{
++				f = new File(url.getFile());
++				panel.setFile (pwyType, f);
++			}
++			else
++			{
++				f = File.createTempFile("urlPathway", "." + Engine.PATHWAY_FILE_EXTENSION);
++				FileUtils.downloadFile(url, f);
++				panel.setFile (pwyType, f);
++			}
++		}
++		catch(Exception e)
++		{
++			Logger.log.error ("Exception While downloading url: " + param, e);
++		}		
++	}
++	
+ 	public void init()
+ 	{
+-		Container contentPane = getContentPane();
+-		contentPane.setLayout (new FlowLayout());
+-		oldPwy = getParameter ("old");
+-		newPwy = getParameter ("new");
+-		JLabel friendlyLabel = new JLabel (oldPwy + " " + newPwy);
+-		contentPane.add (friendlyLabel);
++		panel = new GpmlDiffWindow(this);
++		setContentPane (panel);
+ 
++		openUrl (GpmlDiffWindow.PWY_OLD, getParameter ("old"));
++		openUrl (GpmlDiffWindow.PWY_NEW, getParameter ("new"));
+ 	}
+ 	
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java	(revision 1144)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java	(revision 1145)
+@@ -17,28 +17,37 @@
+ package org.pathvisio.gpmldiff;
+ 
+ import java.io.File;
++import javax.swing.*;
+ 
+ class GpmlDiffGui
+ {
++	private static final int WINDOW_WIDTH = 1000;
++	private static final int WINDOW_HEIGHT = 500;
++
+ 	public static void main (String[] argv)
+-	{		
+-		GpmlDiffWindow window = new GpmlDiffWindow();
++	{
++		JFrame window = new JFrame();
++		GpmlDiffWindow panel = new GpmlDiffWindow(window);
++		panel.addFileActions();
+ 		if (argv.length > 0)
+ 		{
+ 			File f = new File (argv[0]);
+ 			if (f.exists())
+ 			{				
+-				window.setFile(GpmlDiffWindow.PWY_OLD, f);
++				panel.setFile(GpmlDiffWindow.PWY_OLD, f);
+ 				if (argv.length > 1)
+ 				{
+ 					f = new File (argv[1]);
+ 					if (f.exists())
+ 					{
+-						window.setFile (GpmlDiffWindow.PWY_NEW, f);
++						panel.setFile (GpmlDiffWindow.PWY_NEW, f);
+ 					}
+ 				}
+ 			}
+ 		}
++		window.setSize (WINDOW_WIDTH, WINDOW_HEIGHT);
++		window.setContentPane(panel);
++		window.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+ 		window.setVisible (true);
+ 	}
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/build.xml
+===================================================================
+--- trunk/tools/gpmldiff/build.xml	(revision 1144)
++++ trunk/tools/gpmldiff/build.xml	(revision 1145)
+@@ -5,15 +5,19 @@
+ 	<property name="build.dir" value="build"/>
+ 
+     <property name="apidoc.dir" value="apidoc"/>
+-	
++	<property name="lib.dir" value="../../lib"/>
++	<property name="diffview.applet.dir" value="applet"/>
++	<property name="diffview.applet.dest" value="/home/martijn/www/wikipathways"/>
++	<property name="applet.class.path" value="lib/jdom.jar lib/derbyclient.jar lib/swing-worker-1.1.jar"/>
+ 	<path id="project.class.path">
+ 		<pathelement location="${build.dir}"/>
+-		<fileset dir="../../lib">
++		<fileset dir="${lib.dir}">
+ 		        <include name="**/*.jar"/>
+ 		</fileset>
+ 	</path>
+ 
+ 	<target name="prepare">
++	    <mkdir dir="${diffview.applet.dir}"/>
+ 		<mkdir dir="${build.dir}"/>
+ 		<mkdir dir="${apidoc.dir}"/>	
+ 	</target>
+@@ -21,7 +25,36 @@
+ 	<target name="clean" description="Remove all generated files.">
+ 		<delete dir="${build.dir}"/>
+ 		<delete dir="${apidoc.dir}"/>
++	    <delete dir="${diffview.applet.dir}"/>
+ 	</target>
++
++	<target name="applet" depends="compile" description="Generate applet jar file">
++		<jar jarfile="diffview.jar">
++			<fileset dir="${build.dir}" includes="**/*.class"/>
++			<fileset dir="." includes="../../GPML.xsd"/>
++            <manifest>
++            	 <attribute name="Class-Path" value="${applet.class.path}"/>
++            </manifest>
++		</jar>
++
++	    <mkdir dir="${diffview.applet.dir}/lib"/>
++		<copy file="diffview.jar" toDir="${diffview.applet.dir}"/>
++		<copy toDir="${diffview.applet.dir}/lib">
++			<fileset dir="${lib.dir}">
++				<include name="jdom.jar"/>
++				<include name="swing-worker-1.1.jar"/>
++				<include name="derbyclient.jar"/>
++			</fileset>
++		</copy>
++		<signjar alias="PV" lazy = "true" 
++			storepass="PathVisio" keystore="${lib.dir}/visioKeyStore">
++			<fileset dir="${diffview.applet.dir}" includes="**/*.jar"/>
++		</signjar>
++		<!-- copy to /var/www/wikipathways -->
++		<copy toDir="${diffview.applet.dest}">
++			<fileset dir="${diffview.applet.dir}" includes="**/*.*" />
++		</copy>
++	</target>
+ 	
+ 	<target name="compile-soft" depends="prepare" description="Compile only modified sources">
+ 		<javac srcdir="${src.dir}" 
+@@ -35,18 +68,20 @@
+ 			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
+-		<javac srcdir="../../src/v2"
+-			   includes="**"
++		
++		<javac srcdir="../../src/v1"
++			   includes="Globals.java"
+ 			   destdir="${build.dir}"
+ 			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
++<!--
+ 		<javac srcdir="../../src/swt"
+ 			   includes="**"
+ 			   destdir="${build.dir}"
+ 			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+-		</javac>
++		</javac> !-->
+ 		<javac srcdir="../../src/swing"
+ 			   includes="**"
+ 			   destdir="${build.dir}"
+@@ -58,7 +93,7 @@
+ 	<target name="compile" depends="prepare" description="Compile all sources">
+ 		<javac srcdir="../../src/"
+ 			    debug="true"
+-			   includes="core/**,v2/**,swing/**,swt/**"
++			   includes="core/**,swing/**,v1/**/Globals.java"
+ 			   destdir="${build.dir}">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>

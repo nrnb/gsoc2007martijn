@@ -1,0 +1,568 @@
+Index: trunk/pathvisio.sh
+===================================================================
+--- trunk/pathvisio.sh	(revision 1033)
++++ trunk/pathvisio.sh	(revision 1034)
+@@ -81,7 +81,7 @@
+ 
+ if [ $RUN_MODE = "DIRECT" ]; then
+ 	if [ $USE_EXPERIMENTAL = "0" ]; then
+-		jdb -classpath $MYCLASSPATH1 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS
++		java -classpath $MYCLASSPATH1 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS
+ 	elif [ $USE_EXPERIMENTAL = "1" ]; then
+ 		java -classpath $MYCLASSPATH2 -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" $MAIN_CLASS -ur
+ 	fi	
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1033)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1034)
+@@ -18,8 +18,11 @@
+ 
+ import java.awt.Color;
+ import java.io.File;
++import java.io.FileReader;
++import java.io.FileNotFoundException;
+ import java.io.FileWriter;
+ import java.io.IOException;
++import java.io.Reader;
+ import java.io.InputStream;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+@@ -369,10 +372,16 @@
+ 		return doc;
+ 	}
+ 
++	public static PathwayElement mapElement(Element e) throws ConverterException
++	{
++		return mapElement (e, null);
++	}
++	
+ 	/**
+ 	   Create a single PathwayElement based on a piece of Jdom tree. Used also by Patch utility
++	   Pathway p may be null
+ 	 */
+-	public static PathwayElement mapElement(Element e) throws ConverterException
++	public static PathwayElement mapElement(Element e, Pathway p) throws ConverterException
+ 	{
+ 		String tag = e.getName();
+ 		int ot = ObjectType.getTagMapping(tag);
+@@ -385,6 +394,10 @@
+ 		}
+ 		
+ 		PathwayElement o = new PathwayElement(ot);
++		if (p != null)
++		{
++			p.add (o);
++		}
+ 
+ 		switch (o.getObjectType())
+ 		{
+@@ -445,18 +458,6 @@
+ 		}
+ 		return o;
+ 	}
+-
+-	/**
+-	   Read a piece of Jdom tree, create a PathwayElement based on that and add it to the Pathway.
+-	 */
+-	private static void mapElement(Element e, Pathway p) throws ConverterException
+-	{
+-		PathwayElement o = mapElement (e);
+-		if (o != null)
+-		{
+-			p.add (o);
+-		}
+-	}
+ 	
+ 	private static void mapLineData(PathwayElement o, Element e) throws ConverterException
+ 	{
+@@ -583,7 +584,7 @@
+ 	private static void mapGraphId (PathwayElement o, Element e)
+ 	{
+ 		String id = e.getAttributeValue("GraphId");
+-		if(id == null || id.equals("")) {
++		if((id == null || id.equals("")) && o.getParent() != null) {
+ 			id = o.getParent().getUniqueId();
+ 		}
+ 		o.setGraphId (id);
+@@ -621,7 +622,7 @@
+ 	{
+ 		//ID
+ 		String id = e.getAttributeValue("GroupId");
+-		if(id == null || id.equals("")) 
++		if((id == null || id.equals("")) && o.getParent() != null) 
+ 			{id = o.getParent().getUniqueId();}
+ 		o.setGroupId (id);
+ 		//Style
+@@ -1093,14 +1094,28 @@
+ 	
+ 	static public void readFromXml(Pathway pwy, File file, boolean validate) throws ConverterException
+ 	{
++		FileReader inf;
++		try	
++		{
++			inf = new FileReader (file);
++		}
++		catch (FileNotFoundException e)
++		{
++			throw new ConverterException (e);
++		}
++		readFromXml (pwy, inf, validate);
++	}
++	
++	static public void readFromXml(Pathway pwy, Reader in, boolean validate) throws ConverterException
++	{
+ 		// Start XML processing
+-		Logger.log.info("Start reading the XML file: " + file);
++
+ 		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
+ 		// try to read the file; if an error occurs, catch the exception and print feedback
+ 		try
+ 		{
+ 			// build JDOM tree
+-			Document doc = builder.build(file);
++			Document doc = builder.build(in);
+ 
+ 			if (validate) validateDocument(doc);
+ 			
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1033)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1034)
+@@ -17,15 +17,17 @@
+ package org.pathvisio.model;
+ 
+ import java.io.File;
++import java.io.Reader;
+ import java.text.SimpleDateFormat;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.HashMap;
+ import java.util.HashSet;
+-import java.util.Iterator;
+ import java.util.List;
+ import java.util.Random;
+ import java.util.Set;
++
++import org.pathvisio.debug.Logger;
+ import org.pathvisio.model.GraphLink.GraphRefContainer;
+ 
+ /**
+@@ -386,10 +388,17 @@
+ 
+ 	}
+ 
++	public void readFromXml(Reader in, boolean validate) throws ConverterException
++	{
++		GpmlFormat.readFromXml (this, in, validate);
++		setSourceFile (null);
++	}
++
+ 	public void readFromXml(File file, boolean validate) throws ConverterException
+ 	{
++		Logger.log.info("Start reading the XML file: " + file);
++		
+ 		GpmlFormat.readFromXml (this, file, validate);
+-
+ 		setSourceFile (file);
+ 	}
+ 		
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1033)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1034)
+@@ -23,7 +23,6 @@
+ import org.jdom.input.*;
+ import org.pathvisio.model.ConverterException;
+ import org.pathvisio.model.GpmlFormat;
+-import org.pathvisio.model.Pathway;
+ import org.pathvisio.model.PathwayElement;
+ import org.pathvisio.model.PropertyType;
+ 
+@@ -40,7 +39,7 @@
+ 	{
+ 		boolean isDeletion; // true when this is a deletion, false when this is a modification
+ 		public PathwayElement oldElt;
+-		List<Change> changes = new ArrayList (); // only used when isDeletion == false
++		List<Change> changes = new ArrayList<Change> (); // only used when isDeletion == false
+ 
+ 		public PathwayElement getNewElt()
+ 		{
+@@ -157,7 +156,7 @@
+ 				// apply modification to oldElt
+ 				PathwayElement newElt = mod.getNewElt();
+ 				// and add it to the pwy.
+-				newPwy.add (mod.oldElt);
++				newPwy.add (newElt);
+ 			}
+ 			current = current.getParent();
+ 		}
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 1033)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 1034)
+@@ -18,8 +18,6 @@
+ 
+ import java.io.*;
+ import org.pathvisio.debug.Logger;
+-import org.pathvisio.model.Pathway;
+-import org.pathvisio.model.ConverterException;
+ 
+ /**
+    Dgpml patch utility, main function
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 1033)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 1034)
+@@ -89,7 +89,23 @@
+ 		result.src = f;
+ 		return result;
+ 	}
++	
++	// make default constructor private
++	private PwyDoc()
++	{
++	}
++	
++	public PwyDoc (Pathway _pwy)
++	{
++		assert (_pwy != null);
++		pwy = _pwy;
+ 		
++		for (PathwayElement e : pwy.getDataObjects())
++		{
++			add (e);
++		}
++	}
++		
+ 	/**
+ 	   Finds correspondence set with the lowest cost using Dijkstra's algorithm
+ 	   //TODO: currently not using Dijkstra's algorithm but ad-hoc.
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 1033)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 1034)
+@@ -16,18 +16,306 @@
+ //
+ package org.pathvisio.gpmldiff;
+ 
++import java.io.IOException;
++import java.io.Reader;
++import java.io.StringReader;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.ConverterException;
++import org.pathvisio.model.PathwayElement;
++
++import junit.framework.TestCase;
+ /**
+    Unit tests for package GpmlDiff
+ */
+-class Test
++public class Test extends TestCase
+ {
+-	void testPwy()
++	Pathway originalPwy = new Pathway();
++	PwyDoc originalDoc;
++	
++	/**
++	 * TestDiffOutputter is a diff outputter that 
++	 * tests if all the events are received in the right 
++	 * order and in the right number.
++	 */
++	class TestDiffOutputter extends DiffOutputter
+ 	{
+-		// read test file
++		private int deletions = 0;
++		private int insertions = 0;
++		private int changes = 0;
++		private int modifiedElements = 0;
++		private int changedSinceOpen = 0;
++		private boolean modifyOpened = false;
++		private boolean flushed = false;
+ 		
++		public void checkCounts (int del, int ins, int ch, int mod)
++		{
++			assertTrue ("Flush expected", flushed);
++			assertEquals ("Unexpected number of deletions", del, deletions);			
++			assertEquals ("Unexpected number of insertions", ins, insertions);
++			assertEquals ("Unexpected number of changes", ch, changes);
++			assertEquals ("Unexpected number of modified elements", mod, modifiedElements);
++		}
++		
++		@Override
++		public void delete(PathwayElement oldElt) 
++		{
++			assertFalse ("There was a modifyStart event not followed by a modifyEnd event", modifyOpened);
++			deletions++;			
++		}
++
++		@Override
++		public void flush() throws IOException 
++		{			
++			assertFalse ("There was a modifyStart event not followed by a modifyEnd event", modifyOpened);
++			flushed = true;
++		}
++
++		@Override
++		public void insert(PathwayElement newElt) 
++		{
++			assertFalse ("There was a modifyStart event not followed by a modifyEnd event", modifyOpened);
++			insertions++;
++		}
++
++		@Override
++		public void modifyAttr(String attr, String oldVal, String newVal) 
++		{
++			assertTrue ("There was a modifyevent not preceded by a modifyStart event", modifyOpened);
++			assertNotNull ("attr can't be null", attr);
++			assertNotNull ("oldVal can't be null", oldVal);
++			assertNotNull ("newVal can't be null", newVal);
++			changes++;
++			changedSinceOpen++;
++		}
++
++		@Override
++		public void modifyEnd() 
++		{
++			assertTrue ("There was a modifyEnd event not preceded by a modifyStart event", modifyOpened);
++			modifyOpened = false;
++			assertNotSame ("Expected more than 0 changes in modified element", changedSinceOpen, 0);
++		}
++
++		@Override
++		public void modifyStart(PathwayElement oldElt, PathwayElement newElt) 
++		{
++			assertNotNull ("oldElt can't be null", oldElt);
++			assertNotNull ("newElt can't be null", newElt);
++			assertFalse ("There was a modifyStart event not followed by a modifyEnd event", modifyOpened);
++			modifyOpened = true;
++			changedSinceOpen = 0;
++			modifiedElements++;
++		}
++		
+ 	}
++	
++	public void setUp()
++	{
++		try
++		{
++			Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" + 
++				"<Pathway xmlns=\"http://genmapp.org/GPML/2007\" Name=\"New Pathway\" Data-Source=\"GenMAPP 2.0\" Version=\"20070724\">\n" + 
++				"  <Graphics BoardWidth=\"18000.0\" BoardHeight=\"12000.0\" WindowWidth=\"18000.0\" WindowHeight=\"12000.0\" />\n" + 
++				"  <Line>\n" + 
++				"    <Graphics Color=\"000000\">\n" + 
++				"      <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" + 
++				"      <Point x=\"2430.0\" y=\"2310.0\" />\n" + 
++				"    </Graphics>\n" + 
++				"  </Line>\n" + 
++				"  <Shape Type=\"Rectangle\" GraphId=\"bd1\">\n" + 
++				"    <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" + 
++				"  </Shape>\n" + 
++				"  <InfoBox CenterX=\"0.0\" CenterY=\"0.0\" />\n" + 
++				"</Pathway>\n"
++				);
++			originalPwy.readFromXml (reader, true);
++		}
++		catch (ConverterException e)
++		{
++			fail ("No ConverterException expected in original Pathway");
++		}
++		originalDoc = new PwyDoc (originalPwy);
++	}
++	
++	public void testDiffInsertion()
++	{
++		// read test file
++		Pathway pwy = new Pathway();
++		PwyDoc newDoc;
++		try
++		{
++			Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" + 
++				"<Pathway xmlns=\"http://genmapp.org/GPML/2007\" Name=\"New Pathway\" Data-Source=\"GenMAPP 2.0\" Version=\"20070724\">\n" + 
++				"  <Graphics BoardWidth=\"18000.0\" BoardHeight=\"12000.0\" WindowWidth=\"18000.0\" WindowHeight=\"12000.0\" />\n" + 
++				"  <Line>\n" + 
++				"    <Graphics Color=\"000000\">\n" + 
++				"      <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" + 
++				"      <Point x=\"2430.0\" y=\"2310.0\" />\n" + 
++				"    </Graphics>\n" + 
++				"  </Line>\n" + 
++				"  <Shape Type=\"Rectangle\" GraphId=\"bd1\">\n" + 
++				"    <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" + 
++				"  </Shape>\n" + 
++				"  <Shape Type=\"Brace\">\n" + 
++				"    <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"1582.5\" CenterY=\"2640.0\" Width=\"1231.0\" Height=\"823.9999999999999\" Rotation=\"1.5707963267948966\" />\n" + 
++				"  </Shape>\n" + 				
++				"  <InfoBox CenterX=\"0.0\" CenterY=\"0.0\" />\n" + 
++				"</Pathway>\n"
+ 
+-	void testElt()
++				);
++			pwy.readFromXml (reader, true);
++		}
++		catch (ConverterException e)
++		{
++			e.printStackTrace();
++			fail ("No ConverterException expected");
++		}
++		newDoc = new PwyDoc (pwy);
++		SearchNode result = originalDoc.findCorrespondence (newDoc, new BasicSim(), new BasicCost());
++		TestDiffOutputter out = new TestDiffOutputter();
++		originalDoc.writeResult (result, newDoc, out);
++		try
++		{
++			out.flush();
++		}
++		catch (IOException e)
++		{
++			fail ("No exception expected");
++		}
++		out.checkCounts (0, 1, 0, 0); // check that there is one deletion
++	}
++
++	public void testDiffUnchanged()
+ 	{
++		// read test file
++		Pathway pwy = new Pathway();
++		PwyDoc newDoc;
++		try
++		{
++			Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" + 
++				"<Pathway xmlns=\"http://genmapp.org/GPML/2007\" Name=\"New Pathway\" Data-Source=\"GenMAPP 2.0\" Version=\"20070724\">\n" + 
++				"  <Graphics BoardWidth=\"18000.0\" BoardHeight=\"12000.0\" WindowWidth=\"18000.0\" WindowHeight=\"12000.0\" />\n" + 
++				"  <Line>\n" + 
++				"    <Graphics Color=\"000000\">\n" + 
++				"      <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" + 
++				"      <Point x=\"2430.0\" y=\"2310.0\" />\n" + 
++				"    </Graphics>\n" + 
++				"  </Line>\n" + 
++				"  <Shape Type=\"Rectangle\" GraphId=\"bd1\">\n" + 
++				"    <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" + 
++				"  </Shape>\n" + 
++				"  <InfoBox CenterX=\"0.0\" CenterY=\"0.0\" />\n" + 
++				"</Pathway>\n"
++
++				);
++			pwy.readFromXml (reader, true);
++		}
++		catch (ConverterException e)
++		{
++			fail ("No ConverterException expected");
++		}
++		newDoc = new PwyDoc (pwy);
++		SearchNode result = originalDoc.findCorrespondence (newDoc, new BasicSim(), new BasicCost());
++		TestDiffOutputter out = new TestDiffOutputter();
++		originalDoc.writeResult (result, newDoc, out);
++		try
++		{
++			out.flush();
++		}
++		catch (IOException e)
++		{
++			fail ("No exception expected");
++		}
++		out.checkCounts (0, 0, 0, 0); // check that there is one deletion
+ 	}
++
++	public void testDiffDeletion()
++	{
++		Pathway pwy = new Pathway();
++		PwyDoc newDoc;
++		try 
++		{
++			Reader reader = new StringReader (
++						"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" + 
++						"<Pathway xmlns=\"http://genmapp.org/GPML/2007\" Name=\"New Pathway\" Data-Source=\"GenMAPP 2.0\" Version=\"20070724\">\n" + 
++						"  <Graphics BoardWidth=\"18000.0\" BoardHeight=\"12000.0\" WindowWidth=\"18000.0\" WindowHeight=\"12000.0\" />\n" + 
++						"  <Line>\n" + 
++						"    <Graphics Color=\"000000\">\n" + 
++						"      <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" + 
++						"      <Point x=\"2430.0\" y=\"2310.0\" />\n" + 
++						"    </Graphics>\n" + 
++						"  </Line>\n" + 
++						"  <InfoBox CenterX=\"0.0\" CenterY=\"0.0\" />\n" + 
++						"</Pathway>\n" + 
++						"\n"
++						);						
++			pwy.readFromXml (reader, true);
++		}
++		catch (ConverterException e)
++		{
++			fail ("No ConverterException expected");
++		}
++		newDoc = new PwyDoc (pwy);
++		SearchNode result = originalDoc.findCorrespondence (newDoc, new BasicSim(), new BasicCost());
++		TestDiffOutputter out = new TestDiffOutputter();
++		originalDoc.writeResult (result, newDoc, out);
++		try
++		{
++			out.flush();
++		}
++		catch (IOException e)
++		{
++			fail ("No exception expected");
++		}
++		out.checkCounts (1, 0, 0, 0); // check that there is one deletion
++	}
++		
++	public void testDiffModification()
++	{
++		Pathway pwy = new Pathway();
++		PwyDoc newDoc;
++		try
++		{
++			Reader reader = new StringReader (
++								"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" + 
++								"<Pathway xmlns=\"http://genmapp.org/GPML/2007\" Name=\"New Pathway\" Data-Source=\"GenMAPP 2.0\" Version=\"20070724\">\n" + 
++								"  <Graphics BoardWidth=\"18000.0\" BoardHeight=\"12000.0\" WindowWidth=\"18000.0\" WindowHeight=\"12000.0\" />\n" + 
++								"  <Line>\n" + 
++								"    <Graphics Color=\"000000\">\n" + 
++								"      <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" + 
++								"      <Point x=\"2970.0\" y=\"1605.0\" />\n" + 
++								"    </Graphics>\n" + 
++								"  </Line>\n" + 
++								"  <Shape Type=\"Oval\" GraphId=\"bd1\">\n" + 
++								"    <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" + 
++								"  </Shape>\n" + 
++								"  <InfoBox CenterX=\"0.0\" CenterY=\"0.0\" />\n" + 
++								"</Pathway>\n"
++								
++								);
++			pwy.readFromXml (reader, true);
++		}
++		catch (ConverterException e)
++		{
++			fail ("No ConverterException expected");
++		}
++		newDoc = new PwyDoc (pwy);
++		SearchNode result = originalDoc.findCorrespondence (newDoc, new BasicSim(), new BasicCost());
++		TestDiffOutputter out = new TestDiffOutputter();
++		originalDoc.writeResult (result, newDoc, out);
++		try
++		{
++			out.flush();
++		}
++		catch (IOException e)
++		{
++			fail ("No exception expected");
++		}
++		out.checkCounts (0, 0, 3, 2); // check that there is one deletion
++	}
++
++
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/build.xml
+===================================================================
+--- trunk/tools/gpmldiff/build.xml	(revision 1033)
++++ trunk/tools/gpmldiff/build.xml	(revision 1034)
+@@ -79,7 +79,7 @@
+ 		</javadoc>		
+ 	</target>
+ 		
+-	<target name="test" depends="compile">
++	<target name="test" depends="compile-soft">
+ 		<javac srcdir="src"
+ 			   includes="**"
+ 			   destdir="${build.dir}"

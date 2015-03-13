@@ -1,0 +1,35 @@
+Index: branches/g2d-branch/build.xml
+===================================================================
+--- branches/g2d-branch/build.xml	(revision 944)
++++ branches/g2d-branch/build.xml	(revision 945)
+@@ -63,16 +63,16 @@
+ 	</target>
+ 	
+ 	<target name="compile-v1" depends="prepare,resources-jar" description="Compile all sources">
+-		<javac srcdir="src" debug="true"
+-			includes="v1/**,core/**"
++		<javac srcdir="." debug="true"
++			includes="src/v1/**,src/core/**,swing/**"
+ 			destdir="${build.v1.dir}">
+ 			<classpath refid="project.v1.class.path"/>
+ 		</javac>
+ 	</target>
+ 
+ 	<target name="compile-v2" depends="prepare,resources-jar" description="Compile all sources">
+-		<javac srcdir="src" 
+-               includes="v2/**,core/**"
++		<javac srcdir="." 
++               includes="src/v2/**,src/core/**,swing/**"
+ 			   excludes="core/org/pathvisio/view/VPathwayOld.java"
+ 			   
+                destdir="${build.v2.dir}">
+Index: branches/g2d-branch/pathvisio2.sh
+===================================================================
+--- branches/g2d-branch/pathvisio2.sh	(revision 944)
++++ branches/g2d-branch/pathvisio2.sh	(revision 945)
+@@ -2,4 +2,4 @@
+ export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox:/usr/lib/R/lib
+ export MOZILLA_FIVE_HOME=/usr/lib/firefox
+ export R_HOME=/usr/lib/R
+-java -cp lib/plugins.jar:lib/JRI.jar:lib/org.eclipse.equinox.common.jar:lib/org.eclipse.equinox.supplement.jar:lib/org.eclipse.jface.jar:lib/swt-linux.jar:lib/org.eclipse.core.commands.jar:lib/jdom.jar:build/v2:lib/derby.jar:lib/swt-linux-lib.jar:lib/resources.jar:lib/R-resources.jar -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.GuiMain -ur
++java -cp lib/plugins.jar:lib/JRI.jar:lib/org.eclipse.equinox.common.jar:lib/org.eclipse.equinox.supplement.jar:lib/org.eclipse.jface.jar:lib/swt-linux-lib/swt.jar:lib/org.eclipse.core.commands.jar:lib/jdom.jar:build/v2:lib/derby.jar:lib/swt-linux-lib.jar:lib/resources.jar:lib/R-resources.jar -Djava.library.path="/usr/lib/firefox:./lib/swt-linux-lib" org.pathvisio.gui.swing.GuiMain -ur

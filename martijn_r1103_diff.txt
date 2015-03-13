@@ -1,0 +1,246 @@
+Index: trunk/src/test/org/pathvisio/model/Test.java
+===================================================================
+--- trunk/src/test/org/pathvisio/model/Test.java	(revision 1102)
++++ trunk/src/test/org/pathvisio/model/Test.java	(revision 1103)
+@@ -352,6 +352,7 @@
+ 		PathwayElement mi;
+ 
+ 		mi = data.getMappInfo();
++		assertTrue ("Mi shouldn't be null", mi != null);
+ 		try
+ 		{
+ 			data.writeToXml(tmp, false);
+Index: trunk/src/v2/org/pathvisio/R/RDataOut.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RDataOut.java	(revision 1102)
++++ trunk/src/v2/org/pathvisio/R/RDataOut.java	(revision 1103)
+@@ -94,7 +94,7 @@
+ 	public RDataOut(File pathways, boolean recursive) {
+ 		this();
+ 		//Get the pathway files
+-		pwFiles = FileUtils.getFiles(pathways, Engine.getCurrent().PATHWAY_FILE_EXTENSION, recursive);
++		pwFiles = FileUtils.getFiles(pathways, Engine.PATHWAY_FILE_EXTENSION, recursive);
+ 	}
+ 	
+ 	public List<File> getPathwayFiles() { return pwFiles; }
+@@ -155,7 +155,7 @@
+ 			
+ 		checkValid();
+ 		
+-		pwFiles = FileUtils.getFiles(pwDir, Engine.getCurrent().PATHWAY_FILE_EXTENSION, true);
++		pwFiles = FileUtils.getFiles(pwDir, Engine.PATHWAY_FILE_EXTENSION, true);
+ 
+ 		if(pwFiles.size() == 0) throw new Exception("No pathway files (*.gpml) found in " + pwDir);
+ 		
+Index: trunk/src/core/org/pathvisio/model/Organism.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Organism.java	(revision 1102)
++++ trunk/src/core/org/pathvisio/model/Organism.java	(revision 1103)
+@@ -18,7 +18,6 @@
+ package org.pathvisio.model;
+ 
+ import java.util.ArrayList;
+-import java.util.Collection;
+ import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.List;
+Index: trunk/src/core/org/pathvisio/Engine.java
+===================================================================
+--- trunk/src/core/org/pathvisio/Engine.java	(revision 1102)
++++ trunk/src/core/org/pathvisio/Engine.java	(revision 1103)
+@@ -139,7 +139,7 @@
+ 		String fileName = file.toString();
+ 		
+ 		int dot = fileName.lastIndexOf('.');
+-		String ext = Engine.getCurrent().PATHWAY_FILE_EXTENSION; //
++		String ext = Engine.PATHWAY_FILE_EXTENSION; //
+ 		if(dot >= 0) {
+ 			ext = fileName.substring(dot + 1, fileName.length());
+ 		}
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 1102)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 1103)
+@@ -26,7 +26,6 @@
+ import java.awt.geom.GeneralPath;
+ 
+ import org.pathvisio.model.PathwayElement;
+-import org.pathvisio.model.ShapeType;
+ 
+ /**
+  * This class represents a GMMLShape, which can be a 
+Index: trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java	(revision 1102)
++++ trunk/src/core/org/pathvisio/view/swing/VPathwaySwing.java	(revision 1103)
+@@ -33,7 +33,6 @@
+ import javax.swing.KeyStroke;
+ import javax.swing.SwingUtilities;
+ 
+-import org.pathvisio.debug.Logger;
+ import org.pathvisio.view.VPathway;
+ import org.pathvisio.view.VPathwayEvent;
+ import org.pathvisio.view.VPathwayListener;
+Index: trunk/src/swt/org/pathvisio/visualization/LegendPanel.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/visualization/LegendPanel.java	(revision 1102)
++++ trunk/src/swt/org/pathvisio/visualization/LegendPanel.java	(revision 1103)
+@@ -16,8 +16,6 @@
+ //
+ package org.pathvisio.visualization;
+ 
+-import static org.pathvisio.visualization.LegendPanel.FONT;
+-
+ import java.util.ArrayList;
+ import java.util.EventObject;
+ import java.util.List;
+Index: trunk/src/swt/org/pathvisio/gui/swt/PropertyPanel.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/PropertyPanel.java	(revision 1102)
++++ trunk/src/swt/org/pathvisio/gui/swt/PropertyPanel.java	(revision 1103)
+@@ -24,7 +24,6 @@
+ import java.util.List;
+ import java.util.Set;
+ 
+-import org.eclipse.jface.dialogs.Dialog;
+ import org.eclipse.jface.viewers.ArrayContentProvider;
+ import org.eclipse.jface.viewers.CellEditor;
+ import org.eclipse.jface.viewers.ColorCellEditor;
+@@ -42,7 +41,6 @@
+ import org.eclipse.swt.layout.FillLayout;
+ import org.eclipse.swt.widgets.Composite;
+ import org.eclipse.swt.widgets.Control;
+-import org.eclipse.swt.widgets.Label;
+ import org.eclipse.swt.widgets.Table;
+ import org.eclipse.swt.widgets.TableColumn;
+ import org.eclipse.swt.widgets.TableItem;
+@@ -64,7 +62,6 @@
+ import org.pathvisio.model.PropertyClass;
+ import org.pathvisio.model.PropertyType;
+ import org.pathvisio.model.ShapeType;
+-import org.pathvisio.model.PathwayElement.Comment;
+ import org.pathvisio.preferences.GlobalPreference;
+ import org.pathvisio.util.swt.SuggestCellEditor;
+ import org.pathvisio.util.swt.SwtUtils;
+Index: trunk/src/swt/org/pathvisio/gui/swt/CommonActions.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/CommonActions.java	(revision 1102)
++++ trunk/src/swt/org/pathvisio/gui/swt/CommonActions.java	(revision 1103)
+@@ -109,17 +109,17 @@
+ 			{
+ 				FileDialog fd = new FileDialog(window.getShell(), SWT.SAVE);
+ 				fd.setText("Save");
+-				fd.setFilterExtensions(new String[] {"*." + Engine.getCurrent().SVG_FILE_EXTENSION, "*.*"});
+-				fd.setFilterNames(new String[] {Engine.getCurrent().SVG_FILTER_NAME, "All files (*.*)"});
++				fd.setFilterExtensions(new String[] {"*." + Engine.SVG_FILE_EXTENSION, "*.*"});
++				fd.setFilterNames(new String[] {Engine.SVG_FILTER_NAME, "All files (*.*)"});
+ 				
+ 				File xmlFile = gmmlData.getSourceFile();
+ 				if(xmlFile != null) {
+ 					String name = xmlFile.getName();
+-					if (name.endsWith("." + Engine.getCurrent().PATHWAY_FILE_EXTENSION))
++					if (name.endsWith("." + Engine.PATHWAY_FILE_EXTENSION))
+ 					{
+ 						name = name.substring(0, name.length() - 
+-							Engine.getCurrent().PATHWAY_FILE_EXTENSION.length()) +
+-							Engine.getCurrent().SVG_FILE_EXTENSION;
++							Engine.PATHWAY_FILE_EXTENSION.length()) +
++							Engine.SVG_FILE_EXTENSION;
+ 					}
+ 					fd.setFileName(name);
+ 					fd.setFilterPath(xmlFile.getPath());
+@@ -132,8 +132,8 @@
+ 				if(fileName == null) return;
+ 				
+ 				// Append .svg extension if not already present
+-				if(!fileName.endsWith("." + Engine.getCurrent().SVG_FILE_EXTENSION)) 
+-					fileName += "." + Engine.getCurrent().SVG_FILE_EXTENSION;
++				if(!fileName.endsWith("." + Engine.SVG_FILE_EXTENSION)) 
++					fileName += "." + Engine.SVG_FILE_EXTENSION;
+ 				
+ 				File checkFile = new File(fileName);
+ 				boolean confirmed = true;
+@@ -187,8 +187,8 @@
+ 			fd.setText("Open");
+ 			String pwpath = SwtPreference.SWT_DIR_PWFILES.getValue();
+ 			fd.setFilterPath(pwpath);
+-			fd.setFilterExtensions(new String[] {"*." + Engine.getCurrent().PATHWAY_FILE_EXTENSION, "*.*"});
+-			fd.setFilterNames(new String[] {Engine.getCurrent().PATHWAY_FILTER_NAME, "All files (*.*)"});
++			fd.setFilterExtensions(new String[] {"*." + Engine.PATHWAY_FILE_EXTENSION, "*.*"});
++			fd.setFilterNames(new String[] {Engine.PATHWAY_FILTER_NAME, "All files (*.*)"});
+ 	        String fnMapp = fd.open();
+ 	        // Only open pathway if user selected a file
+ 	        
+@@ -217,8 +217,8 @@
+ 				FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
+ 				fd.setText("Open");
+ 				fd.setFilterPath(SwtPreference.SWT_DIR_PWFILES.getValue());
+-				fd.setFilterExtensions(new String[] {"*." + Engine.getCurrent().GENMAPP_FILE_EXTENSION, "*.*"});
+-				fd.setFilterNames(new String[] {Engine.getCurrent().GENMAPP_FILTER_NAME, "All files (*.*)"});
++				fd.setFilterExtensions(new String[] {"*." + Engine.GENMAPP_FILE_EXTENSION, "*.*"});
++				fd.setFilterNames(new String[] {Engine.GENMAPP_FILTER_NAME, "All files (*.*)"});
+ 	        	String fnMapp = fd.open();
+ 	        	// Only open pathway if user selected a file
+ 	        	
+@@ -302,10 +302,10 @@
+ 				File xmlFile = gmmlData.getSourceFile();
+ 				if(xmlFile != null) {
+ 					String name = xmlFile.getName();
+-					if (name.endsWith("." + Engine.getCurrent().PATHWAY_FILE_EXTENSION))
++					if (name.endsWith("." + Engine.PATHWAY_FILE_EXTENSION))
+ 					{
+ 						name = name.substring(0, name.length() - 
+-							Engine.getCurrent().PATHWAY_FILE_EXTENSION.length() - 1);
++							Engine.PATHWAY_FILE_EXTENSION.length() - 1);
+ 					}
+ 					fd.setFileName(name);
+ 					fd.setFilterPath(xmlFile.getPath());
+@@ -317,7 +317,7 @@
+ 				if(fileName == null) return;
+ 				
+ 				int dot = fileName.lastIndexOf('.');
+-				String ext = Engine.getCurrent().GENMAPP_FILE_EXTENSION;
++				String ext = Engine.GENMAPP_FILE_EXTENSION;
+ 				if(dot >= 0) {
+ 					ext = fileName.substring(dot + 1, fileName.length());
+ 				}
+Index: trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java	(revision 1102)
++++ trunk/src/swt/org/pathvisio/gui/swt/GuiMain.java	(revision 1103)
+@@ -175,11 +175,11 @@
+ 		
+ 		// Labels for color by expressiondata (mRNA and Protein)
+ 		ImageData img = new ImageData(cl.getResourceAsStream("images/mRNA.bmp"));
+-		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.getCurrent().TRANSPARENT_COLOR));
++		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.TRANSPARENT_COLOR));
+ 		imageRegistry.put("data.mRNA",
+ 				new Image(display, img));
+ 		img = new ImageData(cl.getResourceAsStream("images/protein.bmp"));
+-		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.getCurrent().TRANSPARENT_COLOR));
++		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.TRANSPARENT_COLOR));
+ 		imageRegistry.put("data.protein",
+ 				new Image(display, img));
+ 		imageRegistry.put("sidepanel.minimize",
+Index: trunk/src/swt/org/pathvisio/search/SearchMethods.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/search/SearchMethods.java	(revision 1102)
++++ trunk/src/swt/org/pathvisio/search/SearchMethods.java	(revision 1103)
+@@ -82,7 +82,7 @@
+ 		SearchRunnableWithProgress.monitorWorked((int)(TOTAL_WORK * 0.2));
+ 		
+ 		//get all pathway files in the folder and subfolders
+-		ArrayList<File> pathways = FileUtils.getFiles(folder, Engine.getCurrent().PATHWAY_FILE_EXTENSION, true);
++		ArrayList<File> pathways = FileUtils.getFiles(folder, Engine.PATHWAY_FILE_EXTENSION, true);
+ 
+ 		XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+ 		for(File f : pathways) {
+@@ -127,7 +127,7 @@
+ 		srt.setTableData(srs);
+ 		
+ 		//get all pathway files in the folder and subfolders
+-		ArrayList<File> pathways = FileUtils.getFiles(folder, Engine.getCurrent().PATHWAY_FILE_EXTENSION, true);
++		ArrayList<File> pathways = FileUtils.getFiles(folder, Engine.PATHWAY_FILE_EXTENSION, true);
+ 
+ 		XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+ 		for(File f : pathways) {

@@ -1,0 +1,219 @@
+Index: trunk/tools/gpmldiff/TODO.txt
+===================================================================
+--- trunk/tools/gpmldiff/TODO.txt	(revision 930)
++++ trunk/tools/gpmldiff/TODO.txt	(revision 931)
+@@ -3,3 +3,4 @@
+ * Outputter for xml output
+ * Make similarity function more flexible. Right now, if two elts have different tag names, they match 0 because the keys don't match
+ * Test with lot's of Biopax content
++* Make Dgpmldiff output entire jdom tree instead of summary
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 930)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 931)
+@@ -26,101 +26,101 @@
+ */   
+ class PwyDoc
+ {
+-		private Document doc;
+-		private	List<PwyElt> elts = new ArrayList<PwyElt>();
++	private Document doc;
++	private	List<PwyElt> elts = new ArrayList<PwyElt>();
+ 
+-		/**
+-		   Return a list of all PwyElts contained in this documents
+-		*/
+-		public List<PwyElt> getElts() { return elts; }
++	/**
++	   Return a list of all PwyElts contained in this documents
++	*/
++	public List<PwyElt> getElts() { return elts; }
+ 		
+-		/**
+-		   Construct a new PwyDoc from a certain file
+-		   Returns null if there is a JDOM or IO exception
+-		   TODO: We may want to pass on the exception?
+-		*/
+-		static public PwyDoc read(File f)
++	/**
++	   Construct a new PwyDoc from a certain file
++	   Returns null if there is a JDOM or IO exception
++	   TODO: We may want to pass on the exception?
++	*/
++	static public PwyDoc read(File f)
++	{
++		PwyDoc result = null;
++		try
+ 		{
+-				PwyDoc result = null;
+-				try
+-				{
+-						SAXBuilder saxb = new SAXBuilder();		
+-						result = new PwyDoc();
+-						result.doc = saxb.build (f);
+-				}
+-				catch (JDOMException e) { e.printStackTrace(); return null; }
+-				catch (IOException e) { return null; }
++			SAXBuilder saxb = new SAXBuilder();		
++			result = new PwyDoc();
++			result.doc = saxb.build (f);
++		}
++		catch (JDOMException e) { e.printStackTrace(); return null; }
++		catch (IOException e) { return null; }
+ 				
+-				Element root = result.doc.getRootElement();
+-				// turn all first-level elements into a PwyElt 
+-				for (Element e : (List<Element>)root.getChildren())
+-				{
+-						result.elts.add (new PwyElt (e));
+-				}
+-				return result;
++		Element root = result.doc.getRootElement();
++		// turn all first-level elements into a PwyElt 
++		for (Element e : (List<Element>)root.getChildren())
++		{
++			result.elts.add (new PwyElt (e));
+ 		}
++		return result;
++	}
+ 		
+-		/**
+-		   Finds correspondence set with the lowest cost using Dijkstra's algorithm
+-		*/
+-		SearchNode findCorrespondence(PwyDoc other, SimilarityFunction simFun, CostFunction costFun)
+-		{
+-				SearchNode currentNode = null;
++	/**
++	   Finds correspondence set with the lowest cost using Dijkstra's algorithm
++	*/
++	SearchNode findCorrespondence(PwyDoc other, SimilarityFunction simFun, CostFunction costFun)
++	{
++		SearchNode currentNode = null;
+ 				
+-				for (PwyElt e1 : elts)
+-				{						
+-						int maxScore = 0;
+-						PwyElt maxElt = null;
+-						for (PwyElt e2: other.getElts())
+-						{
+-								int score = simFun.getSimScore (e1, e2);
+-								if (score > maxScore)
+-								{
+-										maxElt = e2;
+-										maxScore = score;
+-								}
+-						}
++		for (PwyElt e1 : elts)
++		{						
++			int maxScore = 0;
++			PwyElt maxElt = null;
++			for (PwyElt e2: other.getElts())
++			{
++				int score = simFun.getSimScore (e1, e2);
++				if (score > maxScore)
++				{
++					maxElt = e2;
++					maxScore = score;
++				}
++			}
+ 
+-						// add pairing to search tree.
+-						SearchNode newNode = new SearchNode (currentNode, e1, maxElt, 0);
+-						currentNode = newNode;
++			// add pairing to search tree.
++			SearchNode newNode = new SearchNode (currentNode, e1, maxElt, 0);
++			currentNode = newNode;
+ 
+-				}
+-				return currentNode;
+ 		}
++		return currentNode;
++	}
+ 		
+-		/**
+-		   Output the Diff after the best correspondence has been calculated.
+-		*/
+-		void writeResult (SearchNode result, PwyDoc other, DiffOutputter out)
++	/**
++	   Output the Diff after the best correspondence has been calculated.
++	*/
++	void writeResult (SearchNode result, PwyDoc other, DiffOutputter out)
++	{
++		Set<PwyElt> both1 = new HashSet<PwyElt>();
++		Set<PwyElt> both2 = new HashSet<PwyElt>();
++				
++		SearchNode current = result;
++		while (current != null)
+ 		{
+-				Set<PwyElt> both1 = new HashSet<PwyElt>();
+-				Set<PwyElt> both2 = new HashSet<PwyElt>();
+-				
+-				SearchNode current = result;
+-				while (current != null)
+-				{
+-						// check for modification
+-						current.getElt1().writeModifications(current.getElt2(), out);
+-						both1.add (current.getElt1());
+-						both2.add (current.getElt2());
+-						current = current.getParent();
+-				}
++			// check for modification
++			current.getElt1().writeModifications(current.getElt2(), out);
++			both1.add (current.getElt1());
++			both2.add (current.getElt2());
++			current = current.getParent();
++		}
+ 
+-				for (PwyElt e : elts)
+-				{
+-						if (!both1.contains(e))
+-						{
+-								out.insert (e);
+-						}
+-				}
++		for (PwyElt e : elts)
++		{
++			if (!both1.contains(e))
++			{
++				out.insert (e);
++			}
++		}
+ 
+-				for (PwyElt e : other.elts)
+-				{
+-						if (!both2.contains(e))
+-						{
+-								out.delete (e);
+-						}
+-				}
++		for (PwyElt e : other.elts)
++		{
++			if (!both2.contains(e))
++			{
++				out.delete (e);
++			}
+ 		}
++	}
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 930)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 931)
+@@ -40,12 +40,12 @@
+ 		int score = 0;
+ 		
+ 		for (String key : c1.keySet())
++		{
++			if (c2.containsKey (key) && c2.get(key).equals (c1.get(key)))
+ 			{
+-				if (c2.containsKey (key) && c2.get(key).equals (c1.get(key)))
+-					{
+-						score += 2;
+-					}
++				score += 2;
+ 			}
++		}
+ 		
+ 		return (100 * score) / (n1 + n2);
+ 	}

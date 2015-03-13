@@ -1,0 +1,13 @@
+Index: trunk/src/core/org/pathvisio/model/GraphLink.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GraphLink.java	(revision 1145)
++++ trunk/src/core/org/pathvisio/model/GraphLink.java	(revision 1146)
+@@ -115,7 +115,7 @@
+ 		
+ 		List<GraphRefContainer> reflist = gd.getReferringObjects(gid.getGraphId());
+ 		
+-		if (gid.getGraphId() != null && gid.getGraphId().equals("")) 
++		if (gid.getGraphId() != null && !gid.getGraphId().equals("")) 
+ 		{
+ 			// get all referring points as a hashset, so
+ 			// that a line that refers to the same object twice

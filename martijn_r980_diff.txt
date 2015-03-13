@@ -1,0 +1,582 @@
+Index: trunk/src/core/org/pathvisio/view/VPathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 979)
++++ trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 980)
+@@ -223,7 +223,7 @@
+ 	/**
+ 	 * Get the rectangular boundary of this object
+ 	 */
+-	protected Rectangle getVBounds()
++	public Rectangle getVBounds()
+ 	{
+ 		return getVOutline().getBounds();
+ 	}
+Index: trunk/src/core/org/pathvisio/view/GraphicsShape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GraphicsShape.java	(revision 979)
++++ trunk/src/core/org/pathvisio/view/GraphicsShape.java	(revision 980)
+@@ -466,7 +466,7 @@
+ 		return outline;
+ 	}
+ 	
+-	protected Rectangle getVBounds() {
++	public Rectangle getVBounds() {
+ 		//Override VPathwayElement, because getVOutline is too slow
+ 		Rectangle b = getFillShape().getBounds();
+ 		float sw = defaultStroke.getLineWidth();
+Index: trunk/src/core/org/pathvisio/view/Handle.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Handle.java	(revision 979)
++++ trunk/src/core/org/pathvisio/view/Handle.java	(revision 980)
+@@ -218,7 +218,7 @@
+ 		return b;
+ 	}
+ 	
+-	protected Rectangle getVBounds() {
++	public Rectangle getVBounds() {
+ 		//Override VPathwayElement, because getVOutline is too slow
+ 		return getFillShape((int)defaultStroke.getLineWidth()).getBounds();
+ 	}
+Index: trunk/tools/gpmldiff/TODO.txt
+===================================================================
+--- trunk/tools/gpmldiff/TODO.txt	(revision 979)
++++ trunk/tools/gpmldiff/TODO.txt	(revision 980)
+@@ -2,10 +2,6 @@
+ 
+ * Brace as Shape -> Highlighing of Brace is now merely a rectangle
+ 
+-* consistent naming: this vs other, doc1 vs doc2 ---> old vs new
+-
+-* old and new headers in svg output (including filenames)
+-
+ * Make similarity function more flexible. There must be a minimum
+   similarity. Can two different object types match? Should there be a
+   priority score per Attribute?
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 980)
+@@ -73,17 +73,19 @@
+ 		return result;
+ 	}
+ 
+-	void writeModifications (PwyElt other, DiffOutputter outputter)
++	/**
++	   Show detailed modifications compared to another elt
++	   call on oldElt.
++	 */
++	void writeModifications (PwyElt newElt, DiffOutputter outputter)
+ 	{
+-		//TODO: insertions / deletions
+-				
+ 		for (String key : contents.keySet())
+ 		{
+-			if (other.contents.containsKey(key))
++			if (newElt.contents.containsKey(key))
+ 			{
+-				if (!contents.get(key).equals(other.contents.get(key)))
++				if (!contents.get(key).equals(newElt.contents.get(key)))
+ 				{
+-					outputter.modify (this, other, key, contents.get(key), other.contents.get(key));
++					outputter.modify (this, newElt, key, contents.get(key), newElt.contents.get(key));
+ 				}
+ 			}
+ 		}			
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 980)
+@@ -30,6 +30,9 @@
+ 
+ class SvgMain
+ {
++	static final int OLD = 0;
++	static final int NEW = 1;
++
+ 	static public void main (String argv[]) throws IOException, ConverterException
+ 	{
+ 		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+@@ -38,10 +41,10 @@
+ 		
+ 		Pathway pwy[] = {new Pathway(), new Pathway()};
+ 		
+-// 		pwy[0].readFromXml (new File ("testcases/Simple1.1.gpml"), false);
+-// 		pwy[1].readFromXml (new File ("testcases/Simple1.2.gpml"), false);
+- 		pwy[0].readFromXml (new File ("testcases/sandbox070524.gpml"), false);
+- 		pwy[1].readFromXml (new File ("testcases/sandbox070522_5.gpml"), false);
++// 		pwy[OLD].readFromXml (new File ("testcases/Simple1.1.gpml"), false);
++// 		pwy[NEW].readFromXml (new File ("testcases/Simple1.2.gpml"), false);
++ 		pwy[OLD].readFromXml (new File ("testcases/sandbox070524.gpml"), false);
++ 		pwy[NEW].readFromXml (new File ("testcases/sandbox070522_5.gpml"), false);
+ 		
+ 		VPathway vpwy[] = {new VPathway(null), new VPathway(null)};
+ 		
+@@ -55,11 +58,11 @@
+ 			height[i] = vpwy[i].getVHeight();
+ 		}
+ 
+-		int maxh = height[0] > height[1] ? height[0] : height[1];		
+-		int maxw = width[0] > width[1] ? width[0] : width[1];
++		int maxh = height[OLD] > height[NEW] ? height[OLD] : height[NEW];		
++		int maxw = width[OLD] > width[NEW] ? width[OLD] : width[NEW];
+ 
+ 		int j = 0;
+-		for (VPathwayElement e : vpwy[0].getDrawingObjects())
++		for (VPathwayElement e : vpwy[OLD].getDrawingObjects())
+ 		{
+ 			if (e instanceof org.pathvisio.view.Graphics)
+ 			{
+@@ -80,9 +83,9 @@
+  		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+ 		svgGenerator.setSVGCanvasSize (new Dimension (maxw * 2, maxh));
+ 
+-		vpwy[0].draw (svgGenerator, null, true);
++		vpwy[OLD].draw (svgGenerator, null, true);
+  		svgGenerator.translate (maxw, 0);
+- 		vpwy[1].draw (svgGenerator, null, true);
++ 		vpwy[NEW].draw (svgGenerator, null, true);
+ 		
+ 		boolean useCSS = true;
+ 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 980)
+@@ -28,8 +28,9 @@
+ */   
+ class PwyDoc
+ {
+-	Pathway pwy;
+-
++	Pathway pwy = null;
++	File src = null;
++	
+ 	/**
+ 	   return the wrapped Pathway.
+ 	 */
+@@ -37,6 +38,11 @@
+ 	{
+ 		return pwy;
+ 	}
++
++	File getSourceFile ()
++	{
++		return src;
++	}
+ 	
+ 	private	List<PwyElt> elts = new ArrayList<PwyElt>();
+ 
+@@ -64,69 +70,90 @@
+ 		{
+ 			result.elts.add (new PwyElt (e));
+ 		}
++		
++		result.src = f;
+ 		return result;
+ 	}
+ 		
+ 	/**
+ 	   Finds correspondence set with the lowest cost using Dijkstra's algorithm
++	   //TODO: currently not using Dijkstra's algorithm but ad-hoc.
++	   
++	   Call this on the OLD doc
++	   @param newDoc the New doc
++	   @param simFun similarity function
++	   @param costFun cost function (for deciding which correspondence set to choose)
+ 	*/
+-	SearchNode findCorrespondence(PwyDoc other, SimilarityFunction simFun, CostFunction costFun)
++	SearchNode findCorrespondence(PwyDoc newDoc, SimilarityFunction simFun, CostFunction costFun)
+ 	{
+ 		SearchNode currentNode = null;
+ 				
+-		for (PwyElt e1 : elts)
++		for (PwyElt oldElt : elts)
+ 		{						
+ 			int maxScore = 0;
+-			PwyElt maxElt = null;
+-			for (PwyElt e2: other.getElts())
++			PwyElt maxNewElt = null;
++			for (PwyElt newElt : newDoc.getElts())
+ 			{
+-				int score = simFun.getSimScore (e1, e2);
++				int score = simFun.getSimScore (oldElt, newElt);
+ 				if (score > maxScore)
+ 				{
+-					maxElt = e2;
++					maxNewElt = newElt;
+ 					maxScore = score;
+ 				}
+ 			}
+ 
+-			// add pairing to search tree.
+-			SearchNode newNode = new SearchNode (currentNode, e1, maxElt, 0);
+-			currentNode = newNode;
++			if (maxNewElt != null && maxScore > 70)
++			{
++				// add pairing to search tree.
++				SearchNode newNode = new SearchNode (currentNode, oldElt, maxNewElt, 0);
++				currentNode = newNode;
++			}
+ 
+ 		}
+ 		return currentNode;
+ 	}
+ 		
+ 	/**
+-	   Output the Diff after the best correspondence has been calculated.
++	   Output the Diff after the best correspondence has been
++	   calculated.  call this on the OLD doc.
++
++	   @param result result of findcorrespondence
++	   @param newPwy the new pathway compared against
++	   @param out DiffOutputter that absorbs the results and puts it
++	   somewhere depending on the type of DiffOutputter
+ 	*/
+-	void writeResult (SearchNode result, PwyDoc other, DiffOutputter out)
++	void writeResult (SearchNode result, PwyDoc newPwy, DiffOutputter out)
+ 	{
+-		Set<PwyElt> both1 = new HashSet<PwyElt>();
+-		Set<PwyElt> both2 = new HashSet<PwyElt>();
++		Set<PwyElt> bothOld = new HashSet<PwyElt>();
++		Set<PwyElt> bothNew = new HashSet<PwyElt>();
+ 				
+ 		SearchNode current = result;
+ 		while (current != null)
+ 		{
+ 			// check for modification
+-			current.getElt1().writeModifications(current.getElt2(), out);
+-			both1.add (current.getElt1());
+-			both2.add (current.getElt2());
++			current.getOldElt().writeModifications(current.getNewElt(), out);
++			bothOld.add (current.getOldElt());
++			bothNew.add (current.getNewElt());
+ 			current = current.getParent();
+ 		}
+ 
+-		for (PwyElt e : elts)
++		for (PwyElt oldElt : elts)
+ 		{
+-			if (!both1.contains(e))
++			// if the oldElt doesn't have a corresponding newElt...
++			if (!bothOld.contains(oldElt))
+ 			{
+-				out.insert (e);
++				// then we have a deletion
++				out.delete (oldElt);
+ 			}
+ 		}
+ 
+-		for (PwyElt e : other.elts)
++		for (PwyElt newElt : newPwy.elts)
+ 		{
+-			if (!both2.contains(e))
++			// if the newElt doesn't have a corresponding oldElt
++			if (!bothNew.contains(newElt))
+ 			{
+-				out.delete (e);
++				// then we have an insertion
++				out.insert (newElt);
+ 			}
+ 		}
+ 	}
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 980)
+@@ -24,8 +24,8 @@
+ */
+ class GpmlDiff
+ {
+-	static File fileOld = null;
+-	static File fileNew = null;
++	static File oldFile = null;
++	static File newFile = null;
+ 	
+ 	/**
+ 	   Parse Command-line Options
+@@ -36,13 +36,13 @@
+ 		if (argv.length != 2) error = "Two parameters expected";
+ 		if (error == null)
+ 		{
+-			fileOld = new File(argv[0]);
+-			if (!fileOld.exists()) error = argv[0] + ": File not found";
++			oldFile = new File(argv[0]);
++			if (!oldFile.exists()) error = argv[0] + ": File not found";
+ 		}
+ 		if (error == null)
+ 		{
+-			fileNew = new File(argv[1]);
+-			if (!fileNew.exists()) error = argv[1] + ": File not found";
++			newFile = new File(argv[1]);
++			if (!newFile.exists()) error = argv[1] + ": File not found";
+ 		}
+ 		if (error != null)
+ 		{
+@@ -79,13 +79,15 @@
+ 		catch (IOException e) {}
+ 		if (parseCliOptions(argv))
+ 		{
+-			PwyDoc doc1 = PwyDoc.read (fileOld);
+-			PwyDoc doc2 = PwyDoc.read (fileNew);
+-			SearchNode result = doc1.findCorrespondence (doc2, new BasicSim(), new BasicCost());
++			PwyDoc oldDoc = PwyDoc.read (oldFile);
++			PwyDoc newDoc = PwyDoc.read (newFile);
++			SearchNode result = oldDoc.findCorrespondence (newDoc, new BasicSim(), new BasicCost());
++
++//			DiffOutputter out = new BasicOutputter();
+ // 			DiffOutputter out = new DgpmlOutputter();
+-
+-			DiffOutputter out = new SvgOutputter(doc1, doc2);
+-			doc1.writeResult (result, doc2, out);
++ 			DiffOutputter out = new SvgOutputter(oldDoc, newDoc);
++			
++			oldDoc.writeResult (result, newDoc, out);
+ 			try
+ 			{
+ 				out.flush();
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 980)
+@@ -27,26 +27,26 @@
+ 	/**
+ 	   returns a score between 0 and 100, 100 if both elements are completely similar
+ 	*/
+-	public int getSimScore (PwyElt e1, PwyElt e2)
++	public int getSimScore (PwyElt oldE, PwyElt newE)
+ 	{
+-		Map<String, String> c1 = e1.getContents();
+-		Map<String, String> c2 = e2.getContents();
++		Map<String, String> oldC = oldE.getContents();
++		Map<String, String> newC = newE.getContents();
+ 
+-		int n1 = c1.size();
+-		int n2 = c2.size();
++		int oldN = oldC.size();
++		int newN = newC.size();
+ 
+-		if (n1 + n2 == 0) return 0; // div by 0 prevention
++		if (oldN + newN == 0) return 0; // div by 0 prevention
+ 		
+ 		int score = 0;
+ 		
+-		for (String key : c1.keySet())
++		for (String key : oldC.keySet())
+ 		{
+-			if (c2.containsKey (key) && c2.get(key).equals (c1.get(key)))
++			if (newC.containsKey (key) && newC.get(key).equals (oldC.get(key)))
+ 			{
+ 				score += 2;
+ 			}
+ 		}
+ 		
+-		return (100 * score) / (n1 + n2);
++		return (100 * score) / (oldN + newN);
+ 	}
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java	(revision 980)
+@@ -33,31 +33,31 @@
+ 		return parent;
+ 	}
+ 	
+-	PwyElt elt1; // corresponding elt in doc1
++	PwyElt oldElt; // corresponding elt in old doc
+ 
+-	public PwyElt getElt1()
++	public PwyElt getOldElt()
+ 	{
+-		return elt1;
++		return oldElt;
+ 	}
+ 	
+-	PwyElt elt2; // corresponding elt in doc2
++	PwyElt newElt; // corresponding elt in new doc
+ 
+-	public PwyElt getElt2()
++	public PwyElt getNewElt()
+ 	{
+-		return elt2;
++		return newElt;
+ 	}
+ 	
+ 	/**
+ 	   Create a new SearchNode.
+ 	   note: parent may be null.
+ 	*/
+-	public SearchNode(SearchNode _parent, PwyElt _e1, PwyElt _e2, float _cost)
++	public SearchNode(SearchNode _parent, PwyElt _oldElt, PwyElt _newElt, float _cost)
+ 	{
+ 		cost = _cost;
+ 		parent = _parent;
+-		elt1 = _e1;
+-		elt2 = _e2;
+-		assert (elt1 != null);
+-		assert (elt2 != null);
++		oldElt = _oldElt;
++		newElt = _newElt;
++		assert (oldElt != null);
++		assert (newElt != null);
+ 	}
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 980)
+@@ -18,6 +18,10 @@
+ 
+ import java.awt.Color;
+ import java.awt.Dimension;
++import java.awt.Rectangle;
++import java.awt.Font;
++import java.awt.geom.Rectangle2D;
++import java.awt.font.TextLayout;
+ import java.io.*;
+ import org.apache.batik.dom.GenericDOMImplementation;
+ import org.apache.batik.svggen.SVGGraphics2D;
+@@ -32,11 +36,18 @@
+ 
+ class SvgOutputter extends DiffOutputter
+ {
+-	OutputStream out;
+-	PwyDoc oldPwy;
+-	PwyDoc newPwy;
++	private OutputStream out;
++	private PwyDoc oldPwy;
++	private PwyDoc newPwy;
++	
++	private static final int PWY_OLD = 0;
++	private static final int PWY_NEW = 1;
+ 	VPathway vpwy[] = {new VPathway(null), new VPathway(null)};
++	SVGGraphics2D svgGenerator;
+ 	
++	private static final int HEADER_HIGHT = 32;
++	int deltax = 0;
++	
+ 	SvgOutputter(PwyDoc _oldPwy, PwyDoc _newPwy, File f) throws IOException
+ 	{
+ 		this(_oldPwy, _newPwy);
+@@ -49,34 +60,53 @@
+ 		oldPwy = _oldPwy;
+ 		newPwy = _newPwy;
+ 
+-		vpwy[0].fromGmmlData (oldPwy.getPathway());
+-		vpwy[1].fromGmmlData (newPwy.getPathway());
+-	}
++		vpwy[PWY_OLD].fromGmmlData (oldPwy.getPathway());
++		vpwy[PWY_NEW].fromGmmlData (newPwy.getPathway());
+ 
+-	public void flush() throws IOException
+-	{
+ 		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+ 		String svgNS = "http://www.w3.org/2000/svg";
+ 		Document document = domImpl.createDocument (svgNS, "svg", null);
+ 
+ 		int[] width = new int[2];
+ 		int[] height = new int[2];
++
+ 		for (int i = 0; i < 2; ++i)
+ 		{
+- 			vpwy[i].setPctZoom (50);
++//  			vpwy[i].setPctZoom (50);
+ 			width[i] = vpwy[i].getVWidth();
+ 			height[i] = vpwy[i].getVHeight();
+ 		}
+ 
+-		int maxh = height[0] > height[1] ? height[0] : height[1];		
+-		int maxw = width[0] > width[1] ? width[0] : width[1];
++		
++		int maxh = height[PWY_OLD] > height[PWY_NEW] ? height[PWY_OLD] : height[PWY_NEW];
++		int maxw = width[PWY_OLD] > width[PWY_NEW] ? width[PWY_OLD] : width[PWY_NEW];
+ 
+-		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+-		svgGenerator.setSVGCanvasSize (new Dimension (width[0] + width[1], maxh));
++		deltax = width[0];
++		svgGenerator = new SVGGraphics2D(document);
++		svgGenerator.setSVGCanvasSize (new Dimension (width[0] + width[1], maxh + HEADER_HIGHT));
+ 
+-		vpwy[0].draw (svgGenerator, null, true);
+- 		svgGenerator.translate (width[0], 0);
+- 		vpwy[1].draw (svgGenerator, null, true);
++		// titles
++		svgGenerator.setFont(new Font(null, Font.PLAIN, 16));
++		TextLayout tl = new TextLayout(
++			"OLD: " + oldPwy.getSourceFile().getName(),
++			svgGenerator.getFont(), svgGenerator.getFontRenderContext());
++		Rectangle2D tb = tl.getBounds();
++		tl.draw (svgGenerator, (float)((width[PWY_OLD] - tb.getWidth()) / 2), (float)tb.getHeight());
++		tl = new TextLayout(
++			"NEW: " + newPwy.getSourceFile().getName(),
++			svgGenerator.getFont(), svgGenerator.getFontRenderContext());
++		tb = tl.getBounds();
++		tl.draw (svgGenerator, (float)(width[PWY_OLD] + (width[PWY_OLD] - tb.getWidth()) / 2), (float)tb.getHeight());
++
++	}
++
++	public void flush() throws IOException
++	{		
++		// pwy's themselves		
++ 		svgGenerator.translate (0, HEADER_HIGHT);
++		vpwy[PWY_OLD].draw (svgGenerator, null, false);
++ 		svgGenerator.translate (deltax, 0);
++ 		vpwy[PWY_NEW].draw (svgGenerator, null, false);
+ 		
+ 		boolean useCSS = true;
+ 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
+@@ -86,26 +116,36 @@
+ 	
+ 	public void insert(PwyElt newElt)
+ 	{
+-		VPathwayElement velt = findElt (newElt, vpwy[0]);
++		VPathwayElement velt = findElt (newElt, vpwy[PWY_NEW]);
+ 		assert (velt != null);
+ 		velt.highlight (Color.GREEN);
+ 	}
+ 
+ 	public void delete(PwyElt oldElt)
+ 	{
+-		VPathwayElement velt = findElt (oldElt, vpwy[1]);
++		VPathwayElement velt = findElt (oldElt, vpwy[PWY_OLD]);
+ 		assert (velt != null);
+ 		velt.highlight (Color.RED);
+ 	}
+ 
+ 	public void modify(PwyElt oldElt, PwyElt newElt, String path, String oldVal, String newVal)
+ 	{
+-		VPathwayElement velt = findElt (oldElt, vpwy[0]);
++		VPathwayElement velt = findElt (oldElt, vpwy[PWY_OLD]);
+ 		assert (velt != null);
+ 		velt.highlight (Color.YELLOW);
+-		velt = findElt (newElt, vpwy[1]);
++		Rectangle r1 = velt.getVBounds();
++		
++		velt = findElt (newElt, vpwy[PWY_NEW]);
+ 		assert (velt != null);
+ 		velt.highlight (Color.YELLOW);
++		Rectangle r2 = velt.getVBounds();
++
++		svgGenerator.setColor (Color.YELLOW);
++		svgGenerator.drawLine (
++			(int)(r1.getX() + r1.getWidth() / 2),
++			(int)(r1.getY() + r1.getHeight() / 2 + HEADER_HIGHT),
++			(int)(r2.getX() + r2.getWidth() / 2) + deltax,
++			(int)(r2.getY() + r2.getHeight() / 2) + HEADER_HIGHT);
+ 	}
+ 
+ 	/**
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java	(revision 979)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java	(revision 980)
+@@ -21,5 +21,5 @@
+ */
+ abstract class SimilarityFunction
+ {
+-	abstract public int getSimScore (PwyElt e1, PwyElt e2);
++	abstract public int getSimScore (PwyElt oldElt, PwyElt newElt);
+ }
+\ No newline at end of file

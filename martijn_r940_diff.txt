@@ -1,0 +1,290 @@
+Index: branches/g2d-branch/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- branches/g2d-branch/src/core/org/pathvisio/view/VPathway.java	(revision 939)
++++ branches/g2d-branch/src/core/org/pathvisio/view/VPathway.java	(revision 940)
+@@ -58,7 +58,7 @@
+ 	private static final long serialVersionUID = 1L;
+ 	static final double M_PASTE_OFFSET = 10 * 15;
+ 	
+-	private VPathwayWrapper parent;
++	private VPathwayWrapper parent; // may be null
+ 	
+ 	/**
+ 	 * All objects that are visible on this mapp, including the handles
+@@ -103,7 +103,8 @@
+ 	public boolean isEditMode() { return editMode; }
+ 	
+ 	/**
+-	 *Constructor for this class
++	 Constructor for this class.
++	 @param parent Optional gui-specific wrapper for this VPathway
+ 	 */	
+ 	public VPathway(VPathwayWrapper parent)
+ 	{
+@@ -116,11 +117,13 @@
+ 		VisualizationManager.addListener(this);
+ 	}
+ 	
+-	public void redraw() {
+-		parent.redraw();
++	public void redraw()
++	{
++		if (parent != null) parent.redraw();
+ 	}
+ 	
+-	public VPathwayWrapper getWrapper() {
++	public VPathwayWrapper getWrapper()
++	{
+ 		return parent;
+ 	}
+ 	
+@@ -160,7 +163,10 @@
+ 		}
+ 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+ 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+-		parent.setVSize(width, height); 
++		if (parent != null)
++		{
++			parent.setVSize(width, height);
++		}
+ 		data.fireObjectModifiedEvent(new PathwayEvent(null, PathwayEvent.MODIFIED_GENERAL));
+ 		data.addListener(this);
+ 	}
+@@ -180,7 +186,7 @@
+ 	public void addDirtyRect(Rectangle r)
+ 	{
+ 		if(r == null) { //In case r is null, add whole drawing
+-			r = parent.getVBounds();
++			if (parent != null) { r = parent.getVBounds(); }
+ 		}
+ 		if(dirtyRect == null)
+ 			dirtyRect = r;
+@@ -194,7 +200,7 @@
+ 	 */
+ 	public void redrawDirtyRect()
+ 	{
+-		if (dirtyRect != null)
++		if (dirtyRect != null && parent != null)
+ 			parent.redraw (dirtyRect);
+ 		dirtyRect = null;
+ 	}
+@@ -301,7 +307,7 @@
+ 			clearSelection();
+ 		}
+ 		//SwtEngine.getWindow().showLegend(!editMode);	
+-		parent.redraw();
++		redraw();
+ 	}
+ 	
+ 	private double zoomFactor = 1.0/15.0;
+@@ -346,8 +352,11 @@
+ 		zoomFactor = pctZoomFactor / 100.0 / 15.0;
+ 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+ 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+-		parent.setVSize(width, height); 				
+-		parent.redraw();
++		if (parent != null)
++		{
++			parent.setVSize(width, height); 				
++			redraw();
++		}
+ 	}
+ 
+ 	public void setPressedObject(VPathwayElement o) {
+@@ -563,7 +572,7 @@
+ 	public void resetHighlight() 
+ 	{
+ 		for(VPathwayElement o : drawingObjects) o.unhighlight();
+-		parent.redraw();
++		redraw();
+ 	}
+ 	
+ 	/**
+@@ -1037,7 +1046,7 @@
+ 		if(e.isKey('d') && e.isKeyDown(KeyEvent.M_CTRL)) //CTRL-D to select all gene-products 
+ 		{
+ 			selectGeneProducts();
+-			parent.redraw();
++			redraw();
+ 		}
+ //		System.out.println(e.getKeyCode());
+ //		System.out.println("is g? " + e.isKey('g'));
+@@ -1097,7 +1106,10 @@
+ 			case PathwayEvent.WINDOW:
+ 				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+ 				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+-				parent.setVSize(width, height); 
++				if (parent != null)
++				{
++					parent.setVSize(width, height);
++				}
+ 				break;
+ 		}
+ 		redrawDirtyRect();
+@@ -1259,7 +1271,7 @@
+ 		case(VisualizationEvent.PLUGIN_MODIFIED):
+ 			//getDisplay().syncExec(new Runnable() {
+ 			//	public void run() {
+-					parent.redraw();
++					redraw();
+ 			//	}
+ 			//});
+ 		}
+Index: branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 0)
++++ branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 940)
+@@ -0,0 +1,57 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.gpmldiff;
++
++import java.awt.*;
++import java.io.*;
++import org.apache.batik.svggen.SVGGraphics2D;
++import org.apache.batik.dom.GenericDOMImplementation;
++import org.w3c.dom.Document;
++import org.w3c.dom.DOMImplementation;
++import org.pathvisio.view.VPathway;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.ConverterException;
++
++class SvgMain
++{
++	public void paint (Graphics2D g2d)
++	{
++		g2d.setPaint (Color.red);
++		g2d.fill (new Rectangle (10, 10, 100, 100));
++	}
++	
++	static public void main (String argv[]) throws IOException, ConverterException
++	{
++		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
++		String svgNS = "http://www.w3.org/2000/svg";
++		Document document = domImpl.createDocument (svgNS, "svg", null);
++		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
++
++		SvgMain svgMain = new SvgMain();
++		svgMain.paint(svgGenerator);
++
++		boolean useCSS = true;
++		Writer out = new OutputStreamWriter (System.out, "UTF-8");
++		svgGenerator.stream (out, useCSS);
++
++		Pathway pwy = new Pathway();
++		pwy.readFromXml (new File ("testcases/Simple1.1.gpml"), true);
++		VPathway vpwy = new VPathway(null);
++		vpwy.fromGmmlData(pwy);
++		vpwy.draw (svgGenerator, null);
++	}
++}
+
+Property changes on: branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/semantic.cache
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/semantic.cache	(revision 939)
++++ branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/semantic.cache	(revision 940)
+@@ -44,6 +44,12 @@
+     :pointmax 2008
+     :unmatched-syntax 'nil
+     )
++   (semanticdb-table "SvgMain.java"
++    :major-mode 'jde-mode
++    :tags '(("org.pathvisio.gpmldiff" package nil nil [700 731]) ("java.awt.*" include nil nil [733 751]) ("java.io.*" include nil nil [752 769]) ("org.apache.batik.svggen.SVGGraphics2D" include nil nil [770 815]) ("org.apache.batik.dom.GenericDOMImplementation" include nil nil [816 869]) ("org.w3c.dom.Document" include nil nil [870 898]) ("org.w3c.dom.DOMImplementation" include nil nil [899 936]) ("org.pathvisio.view.VPathway" include nil nil [937 972]) ("org.pathvisio.model.Pathway" include nil nil [973 1008]) ("org.pathvisio.model.ConverterException" include nil nil [1009 1055]) ("SvgMain" type (:members (("paint" function (:typemodifiers ("public") :arguments (("g2d" variable (:type "Graphics2D") (reparse-symbol formal_parameters) [1093 1107])) :type "void") (reparse-symbol class_member_declaration) [1074 1189]) ("main" function (:throws ("IOException" "ConverterException") :typemodifiers ("static" "public") :arguments (("argv[]" variable (:type "String") (reparse-symbol formal_parameters) [1218 1231])) :type "void") (reparse-symbol class_member_declaration) [1193 1916])) :type "class") nil [1057 1918]))
++    :file "SvgMain.java"
++    :pointmax 1919
++    )
+    )
+   :file "semantic.cache"
+   :semantic-tag-version "2.0pre3"
+Index: branches/g2d-branch/tools/gpmldiff/svg.sh
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/svg.sh	(revision 0)
++++ branches/g2d-branch/tools/gpmldiff/svg.sh	(revision 940)
+@@ -0,0 +1,31 @@
++#!/bin/sh
++MYCLASSPATH=\
++build:\
++../../lib/BrowserLauncher.jar:\
++../../lib/batik/batik-awt-util.jar:\
++../../lib/batik/batik-bridge.jar:\
++../../lib/batik/batik-css.jar:\
++../../lib/batik/batik-dom.jar:\
++../../lib/batik/batik-ext.jar:\
++../../lib/batik/batik-extension.jar:\
++../../lib/batik/batik-gvt.jar:\
++../../lib/batik/batik-parser.jar:\
++../../lib/batik/batik-script.jar:\
++../../lib/batik/batik-svg-dom.jar:\
++../../lib/batik/batik-svggen.jar:\
++../../lib/batik/batik-transcoder.jar:\
++../../lib/batik/batik-util.jar:\
++../../lib/batik/batik-xml.jar:\
++../../lib/batik/pdf-transcoder.jar:\
++../../lib/batik/xml-apis.jar:\
++../../lib/derby.jar:\
++../../lib/jdom.jar:\
++../../lib/org.eclipse.core.commands.jar:\
++../../lib/org.eclipse.equinox.common.jar:\
++../../lib/org.eclipse.equinox.supplement.jar:\
++../../lib/org.eclipse.jface.jar:\
++../../lib/resources.jar:\
++../../lib/swt-linux-lib/swt.jar:\
++../../lib/swt-linux-lib.jar
++
++java -cp $MYCLASSPATH org.pathvisio.gpmldiff.SvgMain
+\ No newline at end of file
+
+Property changes on: branches/g2d-branch/tools/gpmldiff/svg.sh
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+Name: svn:executable
+   + *
+
+Index: branches/g2d-branch/tools/gpmldiff/build.xml
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/build.xml	(revision 939)
++++ branches/g2d-branch/tools/gpmldiff/build.xml	(revision 940)
+@@ -27,11 +27,23 @@
+ 		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
+ 			<classpath refid="project.class.path"/>
+ 		</javac>
++		<!--
+ 		<javac srcdir="../../src/"
+ 			   includes="core/**,v2/**"
+ 			   destdir="${build.dir}">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
++		!-->
++		<javac srcdir="../../src/core"
++			   includes="**"
++			   destdir="${build.dir}">
++		  <classpath refid="project.class.path"/>
++		</javac>
++		<javac srcdir="../../src/v2"
++			   includes="**"
++			   destdir="${build.dir}">
++		  <classpath refid="project.class.path"/>
++		</javac>
+ 	</target>
+ 	
+ 	<target name="jar" depends="compile" description="Generates executable jar file">

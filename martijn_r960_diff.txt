@@ -1,0 +1,152 @@
+Index: branches/g2d-branch/tools/gpmldiff/.classpath
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/.classpath	(revision 959)
++++ branches/g2d-branch/tools/gpmldiff/.classpath	(revision 960)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<classpath>
+-	<classpathentry kind="src" path="src"/>
+-	<classpathentry kind="lib" path="lib/jdom.jar"/>
+-	<classpathentry kind="lib" path="lib/junit.jar"/>
+-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+-	<classpathentry kind="output" path="build"/>
+-</classpath>
+Index: branches/g2d-branch/tools/gpmldiff/.project
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/.project	(revision 959)
++++ branches/g2d-branch/tools/gpmldiff/.project	(revision 960)
+@@ -1,17 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<projectDescription>
+-	<name>GpmlDiff</name>
+-	<comment></comment>
+-	<projects>
+-	</projects>
+-	<buildSpec>
+-		<buildCommand>
+-			<name>org.eclipse.jdt.core.javabuilder</name>
+-			<arguments>
+-			</arguments>
+-		</buildCommand>
+-	</buildSpec>
+-	<natures>
+-		<nature>org.eclipse.jdt.core.javanature</nature>
+-	</natures>
+-</projectDescription>
+Index: branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 959)
++++ branches/g2d-branch/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 960)
+@@ -41,15 +41,48 @@
+ 		Document document = domImpl.createDocument (svgNS, "svg", null);
+ 		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+ 
+-//		SvgMain svgMain = new SvgMain();
+-//		svgMain.paint(svgGenerator);
+-
+-		Pathway pwy = new Pathway();
+-		pwy.readFromXml (new File ("/home/martijn/prg/pathvisio-g2d/tools/gpmldiff/testcases/Simple1.1.gpml"), false);
+-		VPathway vpwy = new VPathway(null);
+-		vpwy.fromGmmlData(pwy);
+-		vpwy.draw (svgGenerator, null);
+-
++		File oldFile = null;
++		File newFile = null;
++		if (argv.length > 0)
++		{
++			oldFile = new File (argv[0]);
++			if (!oldFile.canRead())
++			{
++				oldFile = null;
++			}
++		}
++		if (oldFile == null)
++		{
++			oldFile = new File ("testcases/Simple1.1.gpml");
++		}
++		if (argv.length > 1)
++		{
++			newFile = new File (argv[1]);
++			if (!newFile.canRead())
++			{
++				newFile = null;
++			}
++		}
++		if (newFile == null)
++		{
++			newFile = new File ("testcases/Simple1.2.gpml");
++		}
++		
++		Pathway newPwy = new Pathway();
++		Pathway oldPwy = new Pathway();
++		oldPwy.readFromXml (oldFile, false);
++		newPwy.readFromXml (newFile, false);
++		VPathway vnewPwy = new VPathway(null);
++		VPathway voldPwy = new VPathway(null);
++		vnewPwy.fromGmmlData(newPwy);
++		voldPwy.fromGmmlData(oldPwy);
++		vnewPwy.draw (svgGenerator, null);
++		svgGenerator.translate (100,0);
++ 		voldPwy.draw (svgGenerator, null);
++		//svgGenerator.setComposite(AlphaComposite.SRC_OVER);
++		svgGenerator.setColor (new Color (1.0f, 0.0f, 0.0f, 0.5f));
++		svgGenerator.fill (new Rectangle(50, 50, 100, 100));
++		
+ 		boolean useCSS = true;
+ 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
+ 		svgGenerator.stream (out, useCSS);
+Index: branches/g2d-branch/tools/gpmldiff/svg.sh
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/svg.sh	(revision 959)
++++ branches/g2d-branch/tools/gpmldiff/svg.sh	(revision 960)
+@@ -28,4 +28,4 @@
+ ../../lib/swt-linux-lib/swt.jar:\
+ ../../lib/swt-linux-lib.jar
+ 
+-java -cp $MYCLASSPATH org.pathvisio.gpmldiff.SvgMain
+\ No newline at end of file
++java -cp $MYCLASSPATH org.pathvisio.gpmldiff.SvgMain $1
+\ No newline at end of file
+Index: branches/g2d-branch/tools/gpmldiff/build.xml
+===================================================================
+--- branches/g2d-branch/tools/gpmldiff/build.xml	(revision 959)
++++ branches/g2d-branch/tools/gpmldiff/build.xml	(revision 960)
+@@ -27,23 +27,30 @@
+ 		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
+ 			<classpath refid="project.class.path"/>
+ 		</javac>
+-		<!--
+-		<javac srcdir="../../src/"
+-			   includes="core/**,v2/**"
+-			   destdir="${build.dir}">
++<!--		<javac srcdir="../../"
++			   includes="src/core/**,src/v2/**,swing/**"
++			   destdir="${build.dir}"
++			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+-		</javac>
+-		!-->
++		</javac>-->
+ 		<javac srcdir="../../src/core"
+ 			   includes="**"
+-			   destdir="${build.dir}">
++			   destdir="${build.dir}"
++			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
+ 		<javac srcdir="../../src/v2"
+ 			   includes="**"
+-			   destdir="${build.dir}">
++			   destdir="${build.dir}"
++			   debug="true">
+ 		  <classpath refid="project.class.path"/>
+ 		</javac>
++		<javac srcdir="../../swing"
++			   includes="**"
++			   destdir="${build.dir}"
++			   debug="true">
++		  <classpath refid="project.class.path"/>
++		</javac>
+ 	</target>
+ 	
+ 	<target name="jar" depends="compile" description="Generates executable jar file">

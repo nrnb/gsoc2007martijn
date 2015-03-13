@@ -1,0 +1,317 @@
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1037)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1038)
+@@ -17,14 +17,17 @@
+ package org.pathvisio.gpmldiff;
+ 
+ import java.io.IOException;
+-import java.io.InputStream;
++import java.io.Reader;
+ import java.util.*;
++import org.pathvisio.debug.Logger;
++
+ import org.jdom.*;
+ import org.jdom.input.*;
+ import org.pathvisio.model.ConverterException;
+ import org.pathvisio.model.GpmlFormat;
+ import org.pathvisio.model.PathwayElement;
+ import org.pathvisio.model.PropertyType;
++import org.pathvisio.model.ShapeType;
+ 
+ class Patch
+ {
+@@ -47,7 +50,22 @@
+ 			PathwayElement result = oldElt.copy();
+ 			for (Change ch : changes)
+ 			{
+-				result.setProperty(PropertyType.getByTag(ch.attr), ch.newValue);
++				PropertyType pt = PropertyType.getByTag(ch.attr);
++				switch (pt.type())
++				{
++				case STRING: 
++					result.setProperty(pt, ch.newValue);
++					break;
++				case DOUBLE:
++					result.setProperty(pt, Double.parseDouble (ch.newValue));
++					break;
++				case SHAPETYPE:
++					result.setProperty(pt, ShapeType.fromGpmlName(ch.newValue));
++					break;							
++				default:
++					Logger.log.error (ch.attr + " not supported");
++					assert (false);
++				}
+ 			}
+ 			return result;
+ 		}
+@@ -61,7 +79,7 @@
+ 	// in the old Pwy, they just need to be added afterwards.
+ 	private List<PathwayElement> insertions = new ArrayList <PathwayElement>();
+ 	
+-	public void readFromStream (InputStream in) throws JDOMException, IOException, ConverterException
++	public void readFromReader (Reader in) throws JDOMException, IOException, ConverterException
+ 	{
+ 		SAXBuilder builder = new SAXBuilder ();
+ 		Document doc = builder.build (in);
+@@ -143,7 +161,8 @@
+ 		while (current != null)
+ 		{
+ 			// check for modification
+-			ModDel mod = modifications.get (current.newElt);
++			ModDel mod = modifications.get (current.oldElt);
++			assert (mod != null);
+ 			// is this a deletion or a modification?)
+ 			if (mod.isDeletion)
+ 			{
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 1037)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 1038)
+@@ -71,7 +71,7 @@
+ 			Patch patch = new Patch();
+ 			try
+ 			{
+-				patch.readFromStream (System.in); // read diff from STDIN
++				patch.readFromReader (new InputStreamReader (System.in)); // read diff from STDIN
+ 				if (reverse)
+ 				{
+ 					patch.reverse();
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 1037)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 1038)
+@@ -34,7 +34,7 @@
+ 	
+ 	/**
+ 	 * TestDiffOutputter is a diff outputter that 
+-	 * tests if all the events are received in the right 
++	 * tests if all diff events are received in the right 
+ 	 * order and in the right number.
+ 	 */
+ 	class TestDiffOutputter extends DiffOutputter
+@@ -317,5 +317,90 @@
+ 		out.checkCounts (0, 0, 3, 2); // check that there is one deletion
+ 	}
+ 
+-
++	public void testPatchModification()
++	{
++		Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
++				"<Delta>\n" +
++				"  <Modify>\n" +
++				"    <Shape xmlns=\"http://genmapp.org/GPML/2007\" Type=\"Rectangle\" GraphId=\"bd1\">\n" +
++				"      <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" +
++				"    </Shape>\n" +
++				"    <Change attr=\"ShapeType\" old=\"RECTANGLE\" new=\"OVAL\" />\n" +
++				"  </Modify>\n" +
++				"  <Modify>\n" +
++				"    <Line xmlns=\"http://genmapp.org/GPML/2007\">\n" +
++				"      <Graphics Color=\"000000\">\n" +
++				"        <Point x=\"1740.0\" y=\"990.0\" Head=\"Arrow\" />\n" +
++				"        <Point x=\"2430.0\" y=\"2310.0\" />\n" +
++				"      </Graphics>\n" +
++				"    </Line>\n" +
++				"    <Change attr=\"EndX\" old=\"2430.0\" new=\"2970.0\" />\n" +
++				"    <Change attr=\"EndY\" old=\"2310.0\" new=\"1605.0\" />\n" +
++				"  </Modify>\n" +
++				"</Delta>\n");
++		Patch patch = new Patch();
++		try
++		{
++			patch.readFromReader (reader);
++		}
++		catch (Exception e)
++		{
++			e.printStackTrace();
++			fail ("Unexpected exception");
++		}
++		patch.applyTo (originalDoc, 0);
++	}
++	
++	public void testPatchInsertion()
++	{
++		Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
++				"<Delta>\n" +
++				"  <Insert>\n" +
++				"    <Shape xmlns=\"http://genmapp.org/GPML/2007\" Type=\"Brace\" GraphId=\"cd6\">\n" +
++				"      <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"1582.5\" CenterY=\"2640.0\" Width=\"1231.0\" Height=\"823.9999999999999\" Rotation=\"1.5707963267948966\" />\n" +
++				"    </Shape>\n" +
++				"  </Insert>\n" +
++				"</Delta>\n"
++				);
++		Patch patch = new Patch();
++		try
++		{
++			patch.readFromReader (reader);
++		}
++		catch (Exception e)
++		{
++			e.printStackTrace();
++			fail ("Unexpected exception");
++		}
++		patch.applyTo (originalDoc, 0);
++	}
++	
++	public void testPatchDeletion()
++	{
++		Reader reader = new StringReader (
++				"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
++				"<Delta>\n" +
++				"  <Delete>\n" +
++				"    <Shape xmlns=\"http://genmapp.org/GPML/2007\" Type=\"Rectangle\" GraphId=\"bd1\">\n" +
++				"      <Graphics FillColor=\"Transparent\" Color=\"000000\" CenterX=\"3907.5\" CenterY=\"2197.5\" Width=\"1246.0\" Height=\"1246.0\" Rotation=\"0.0\" />\n" +
++				"    </Shape>\n" +
++				"  </Delete>\n" +
++				"</Delta>\n"
++				);
++		Patch patch = new Patch();
++		try
++		{
++			patch.readFromReader (reader);
++		}
++		catch (Exception e)
++		{
++			e.printStackTrace();
++			fail ("Unexpected exception");
++		}
++		patch.applyTo (originalDoc, 0);
++	}
++				
++				
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/testcases/test1-mod.dgpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-mod.dgpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-mod.dgpml	(revision 1038)
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Delta>
++  <Modify>
++    <Shape xmlns="http://genmapp.org/GPML/2007" Type="Rectangle" GraphId="bd1">
++      <Graphics FillColor="Transparent" Color="000000" CenterX="3907.5" CenterY="2197.5" Width="1246.0" Height="1246.0" Rotation="0.0" />
++    </Shape>
++    <Change attr="ShapeType" old="RECTANGLE" new="OVAL" />
++  </Modify>
++  <Modify>
++    <Line xmlns="http://genmapp.org/GPML/2007">
++      <Graphics Color="000000">
++        <Point x="1740.0" y="990.0" Head="Arrow" />
++        <Point x="2430.0" y="2310.0" />
++      </Graphics>
++    </Line>
++    <Change attr="EndX" old="2430.0" new="2970.0" />
++    <Change attr="EndY" old="2310.0" new="1605.0" />
++  </Modify>
++</Delta>
++
+Index: trunk/tools/gpmldiff/testcases/test1-ins.gpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-ins.gpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-ins.gpml	(revision 1038)
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Pathway xmlns="http://genmapp.org/GPML/2007" Name="New Pathway" Data-Source="GenMAPP 2.0" Version="20070724">
++  <Graphics BoardWidth="18000.0" BoardHeight="12000.0" WindowWidth="18000.0" WindowHeight="12000.0" />
++  <Line>
++    <Graphics Color="000000">
++      <Point x="1740.0" y="990.0" Head="Arrow" />
++      <Point x="2430.0" y="2310.0" />
++    </Graphics>
++  </Line>
++  <Shape Type="Rectangle" GraphId="bd1">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="3907.5" CenterY="2197.5" Width="1246.0" Height="1246.0" Rotation="0.0" />
++  </Shape>
++  <Shape Type="Brace">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="1582.5" CenterY="2640.0" Width="1231.0" Height="823.9999999999999" Rotation="1.5707963267948966" />
++  </Shape>
++  <InfoBox CenterX="0.0" CenterY="0.0" />
++</Pathway>
++
+Index: trunk/tools/gpmldiff/testcases/test1.gpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1.gpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1.gpml	(revision 1038)
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Pathway xmlns="http://genmapp.org/GPML/2007" Name="New Pathway" Data-Source="GenMAPP 2.0" Version="20070724">
++  <Graphics BoardWidth="18000.0" BoardHeight="12000.0" WindowWidth="18000.0" WindowHeight="12000.0" />
++  <Line>
++    <Graphics Color="000000">
++      <Point x="1740.0" y="990.0" Head="Arrow" />
++      <Point x="2430.0" y="2310.0" />
++    </Graphics>
++  </Line>
++  <Shape Type="Rectangle" GraphId="bd1">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="3907.5" CenterY="2197.5" Width="1246.0" Height="1246.0" Rotation="0.0" />
++  </Shape>
++  <InfoBox CenterX="0.0" CenterY="0.0" />
++</Pathway>
++
+Index: trunk/tools/gpmldiff/testcases/test1-mod.gpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-mod.gpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-mod.gpml	(revision 1038)
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Pathway xmlns="http://genmapp.org/GPML/2007" Name="New Pathway" Data-Source="GenMAPP 2.0" Version="20070724">
++  <Graphics BoardWidth="18000.0" BoardHeight="12000.0" WindowWidth="18000.0" WindowHeight="12000.0" />
++  <Line>
++    <Graphics Color="000000">
++      <Point x="1740.0" y="990.0" Head="Arrow" />
++      <Point x="2970.0" y="1605.0" />
++    </Graphics>
++  </Line>
++  <Shape Type="Oval" GraphId="bd1">
++    <Graphics FillColor="Transparent" Color="000000" CenterX="3907.5" CenterY="2197.5" Width="1246.0" Height="1246.0" Rotation="0.0" />
++  </Shape>
++  <InfoBox CenterX="0.0" CenterY="0.0" />
++</Pathway>
++
+Index: trunk/tools/gpmldiff/testcases/test1-ins.dgpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-ins.dgpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-ins.dgpml	(revision 1038)
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Delta>
++  <Insert>
++    <Shape xmlns="http://genmapp.org/GPML/2007" Type="Brace" GraphId="cd6">
++      <Graphics FillColor="Transparent" Color="000000" CenterX="1582.5" CenterY="2640.0" Width="1231.0" Height="823.9999999999999" Rotation="1.5707963267948966" />
++    </Shape>
++  </Insert>
++</Delta>
++
+Index: trunk/tools/gpmldiff/testcases/test1-del.gpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-del.gpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-del.gpml	(revision 1038)
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Pathway xmlns="http://genmapp.org/GPML/2007" Name="New Pathway" Data-Source="GenMAPP 2.0" Version="20070724">
++  <Graphics BoardWidth="18000.0" BoardHeight="12000.0" WindowWidth="18000.0" WindowHeight="12000.0" />
++  <Line>
++    <Graphics Color="000000">
++      <Point x="1740.0" y="990.0" Head="Arrow" />
++      <Point x="2430.0" y="2310.0" />
++    </Graphics>
++  </Line>
++  <InfoBox CenterX="0.0" CenterY="0.0" />
++</Pathway>
++
+Index: trunk/tools/gpmldiff/testcases/test1-del.dgpml
+===================================================================
+--- trunk/tools/gpmldiff/testcases/test1-del.dgpml	(revision 0)
++++ trunk/tools/gpmldiff/testcases/test1-del.dgpml	(revision 1038)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<Delta>
++  <Delete>
++    <Shape xmlns="http://genmapp.org/GPML/2007" Type="Rectangle" GraphId="bd1">
++      <Graphics FillColor="Transparent" Color="000000" CenterX="3907.5" CenterY="2197.5" Width="1246.0" Height="1246.0" Rotation="0.0" />
++    </Shape>
++  </Delete>
++</Delta>

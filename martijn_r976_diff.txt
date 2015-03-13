@@ -1,0 +1,1111 @@
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 975)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 976)
+@@ -81,18 +81,6 @@
+ 	}
+ 	
+ 	/**
+-	 * Logger to which all logging will be performed
+-	 */
+-	private static Logger log = new Logger();
+-	
+-	/**
+-	 * Set the logger to which all logging will be performed
+-	 */
+-	public static void setLogger(Logger l) {	
+-		log = l;
+-	}
+-	
+-	/**
+ 	 * factor to convert screen cordinates used in GenMAPP to pixel cordinates
+ 	 * NOTE: maybe it is better to adapt gpml to store cordinates as pixels and
+ 	 * divide the GenMAPP cordinates by this factor on conversion
+@@ -393,21 +381,21 @@
+ 				so.output(doc);
+ 				// If no errors occur, the file is valid according to the gpml xml schema definition
+ 				//TODO: open dialog to report error
+-				log.info("Document is valid according to the xml schema definition '" + 
++				Logger.log.info("Document is valid according to the xml schema definition '" + 
+ 						xsdFile.toString() + "'");
+ 			} catch (SAXException se) {
+-				log.error("Could not parse the xml-schema definition", se);
++				Logger.log.error("Could not parse the xml-schema definition", se);
+ 				throw new ConverterException (se);
+ 			} catch (JDOMException je) {
+-				log.error("Document is invalid according to the xml-schema definition!: " + 
++				Logger.log.error("Document is invalid according to the xml-schema definition!: " + 
+ 						je.getMessage(), je);
+ 				XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+ 				
+-				log.error("The invalid XML code:\n" + xmlcode.outputString(doc));
++				Logger.log.error("The invalid XML code:\n" + xmlcode.outputString(doc));
+ 				throw new ConverterException (je);
+ 			}
+ 		} else {
+-			log.error("Document is not validated because the xml schema definition '" + 
++			Logger.log.error("Document is not validated because the xml schema definition '" + 
+ 					xsdFile + "' could not be found in classpath");
+ 			throw new ConverterException ("Document is not validated because the xml schema definition '" + 
+ 					xsdFile + "' could not be found in classpath");
+@@ -450,7 +438,7 @@
+ 	public void readFromXml(File file, boolean validate) throws ConverterException
+ 	{
+ 		// Start XML processing
+-		log.info("Start reading the XML file: " + file);
++		Logger.log.info("Start reading the XML file: " + file);
+ 		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
+ 		// try to read the file; if an error occurs, catch the exception and print feedback
+ 		try
+Index: trunk/src/core/org/pathvisio/preferences/swt/SwtPreferences.java
+===================================================================
+--- trunk/src/core/org/pathvisio/preferences/swt/SwtPreferences.java	(revision 975)
++++ trunk/src/core/org/pathvisio/preferences/swt/SwtPreferences.java	(revision 976)
+@@ -141,13 +141,7 @@
+ 				Graphics.selectColor = ColorConverter.parseColorString((String)e.getNewValue());
+ 			Engine.getActiveVPathway().redraw();
+ 		}
+-		else if(e.getProperty().equals(GlobalPreference.COLOR_HIGHLIGHTED.name())) {
+-			//if(e.getNewValue() instanceof RGB) Graphics.highlightColor = (RGB)e.getNewValue();
+-			//else 
+-				Graphics.highlightColor = ColorConverter.parseColorString((String)e.getNewValue());
+-				Engine.getActiveVPathway().redraw();
+-		}
+-		else if(e.getProperty().startsWith("directories")) {
++		if(e.getProperty().startsWith("directories")) {
+ 			createDataDirectories();
+ 		}
+ 	}
+Index: trunk/src/core/org/pathvisio/gui/swt/GuiMain.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/swt/GuiMain.java	(revision 975)
++++ trunk/src/core/org/pathvisio/gui/swt/GuiMain.java	(revision 976)
+@@ -85,14 +85,14 @@
+ 	/**
+ 	 * Initiates some objects used by the program
+ 	 */
+-	public static void initiate() {
++	public static void initiate()
++	{
+ 		//initiate logger
+ 		try { 
+ 			GlobalPreference.FILE_LOG.setDefault(new File(SwtEngine.getApplicationDir(), ".PathVisioLog").toString());
+ 			Engine.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
+ 		} catch(Exception e) {}
+ 		Engine.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
+-		Pathway.setLogger(Engine.log);
+ 		
+ 		//load the preferences
+ 		loadPreferences();
+Index: trunk/src/core/org/pathvisio/Engine.java
+===================================================================
+--- trunk/src/core/org/pathvisio/Engine.java	(revision 975)
++++ trunk/src/core/org/pathvisio/Engine.java	(revision 976)
+@@ -51,8 +51,12 @@
+ 	 * the transparent color used in the icons for visualization of protein/mrna data
+ 	 */
+ 	public static final Color TRANSPARENT_COLOR = new Color(255, 0, 255);
+-	
+-	public final static Logger log = new Logger();
++
++	/**
++	   The global application logger
++	   @deprecated. Preferably use Logger.log directly instead.
++	 */
++	public final static Logger log = Logger.log;
+ 			
+ 	/**
+ 	 * Get the {@link URL} for the resource stored in a jar file in the classpath
+Index: trunk/src/core/org/pathvisio/debug/Logger.java
+===================================================================
+--- trunk/src/core/org/pathvisio/debug/Logger.java	(revision 975)
++++ trunk/src/core/org/pathvisio/debug/Logger.java	(revision 976)
+@@ -71,5 +71,9 @@
+ 	}
+ 	public void fatal (String msg) { if (fatalEnabled) s.println ("Fatal: " + msg); }
+ 	
+-	
++
++	/**
++	   Global application logger
++	 */
++	public static final Logger log = new Logger();
+ }
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 976)
+@@ -18,7 +18,10 @@
+ 
+ import java.awt.Color;
+ import java.awt.Graphics2D;
+-
++import java.awt.Rectangle;
++import java.awt.BasicStroke;
++import java.awt.geom.Arc2D;
++import java.awt.geom.Ellipse2D;
+ import org.pathvisio.model.PathwayElement;
+ 
+ /**
+@@ -47,16 +50,15 @@
+ 			return VPathway.DRAW_ORDER_SHAPE;
+ 		}
+ 	}
+-	
++
+ 	public void doDraw(Graphics2D g)
+ 	{					
+ 		Color fillcolor = gdata.getFillColor();
+ 		Color linecolor = gdata.getColor();
+-		if(isSelected()) {
++		if(isSelected())
++		{
+ 			linecolor = selectColor;
+-		} else if (isHighlighted()) {
+-			linecolor = highlightColor;
+-		}
++		} 
+ 		
+ 		int x = getVLeft();
+ 		int y = getVTop();
+@@ -66,8 +68,19 @@
+ 		int cy = getVCenterY();
+ 						
+ 		g.rotate(gdata.getRotation(), cx, cy);
++
++		java.awt.Shape shape = null;
++		switch(gdata.getShapeType())
++		{
++		case OVAL: shape = new Ellipse2D.Double (x, y, w, h); break;
++		case ARC: shape = new Arc2D.Double (x, y, w, h, 0, -180, Arc2D.OPEN); break;
++ 		case BRACE:
++		case RECTANGLE:
++		default: shape = new Rectangle (x, y, w, h);
++		}
+ 		
+-		switch(gdata.getShapeType()) {
++		switch(gdata.getShapeType())
++		{
+ 		case OVAL:
+ 			if(!gdata.isTransparent()) {
+ 				g.setColor(fillcolor);
+@@ -98,5 +111,13 @@
+ 			g.drawRect(x, y, w, h);
+ 			break;
+ 		}
++
++		if (isHighlighted())
++		{
++			Color hc = getHighlightColor();
++			g.setColor(new Color (hc.getRed(), hc.getGreen(), hc.getBlue(), 128));
++			g.setStroke (new BasicStroke (HIGHLIGHT_STROKE_WIDTH));
++			g.draw (shape);
++		}
+ 	}	
+ }
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/view/Graphics.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Graphics.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/Graphics.java	(revision 976)
+@@ -32,10 +32,7 @@
+  * that can be added to a VPathway.
+  */
+ public abstract class Graphics extends VPathwayElement implements PathwayListener
+-{
+-	public static Color selectColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_SELECTED);
+-	public static Color highlightColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_HIGHLIGHTED);
+-	
++{	
+ 	protected PathwayElement gdata = null;
+ 	
+ 	public Graphics(VPathway canvas, PathwayElement o) {
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 976)
+@@ -165,8 +165,8 @@
+ 		{
+ 			fromGmmlDataObject (o);
+ 		}
+-		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+-		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
++		int width = getVWidth();
++		int height = getVHeight();
+ 		if (parent != null)
+ 		{
+ 			parent.setVSize(width, height);
+@@ -366,8 +366,8 @@
+ 			);
+ 		}
+ 		zoomFactor = pctZoomFactor / 100.0 / 15.0;
+-		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+-		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
++		int width = getVWidth();
++		int height = getVHeight();
+ 		if (parent != null)
+ 		{
+ 			parent.setVSize(width, height); 				
+@@ -513,9 +513,7 @@
+ 			area = g2d.getClipBounds();
+ 			if (area == null)
+ 			{
+-				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+-				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+-				area = new Rectangle (0, 0, width, height);
++				area = new Rectangle (0, 0, getVWidth(), getVHeight());
+ 			}
+ 		}
+ 		
+@@ -1495,5 +1493,21 @@
+ 	 * helper method to convert view coordinates to model coordinates 
+ 	 * */
+ 	public double vFromM(double m) { return m * zoomFactor; }
++
++	/**
++	   Get width of entire Pathway view (taking into account zoom)
++	 */
++	public int getVWidth()
++	{
++		return (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
++	}
+ 	
++	/**
++	   Get height of entire Pathway view (taking into account zoom)
++	 */
++	public int getVHeight()
++	{
++		return (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
++	}
++	
+ } // end of class
+Index: trunk/src/core/org/pathvisio/view/VPathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 976)
+@@ -20,26 +20,33 @@
+ import java.awt.Graphics2D;
+ import java.awt.Rectangle;
+ import java.awt.Shape;
++import java.awt.Color;
+ import java.awt.geom.Point2D;
+ import java.awt.geom.Rectangle2D;
+ 
++import org.pathvisio.preferences.GlobalPreference;
++
+ public abstract class VPathwayElement implements Comparable<VPathwayElement>
+ {	
+ 	protected BasicStroke defaultStroke = new BasicStroke();
+ 	
+ 	protected VPathway canvas;
+ 	
+-	VPathwayElement(VPathway canvas) {
++	VPathwayElement(VPathway canvas)
++	{
+ 		this.canvas = canvas;
+ 		canvas.addObject(this);
+ 	}
+ 	
+-	private boolean isHighlighted;
++	public static Color selectColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_SELECTED);
++	public static final float HIGHLIGHT_STROKE_WIDTH = 5.0f;
++
+ 	private Rectangle oldrect = null;
+ 	
+ 	private boolean isSelected;
+ 		
+-	public final void draw(Graphics2D g2d) {
++	public final void draw(Graphics2D g2d)
++	{
+ 		//Create a copy to ensure that the state of this Graphics2D will be intact
+ 		//see: http://java.sun.com/docs/books/tutorial/uiswing/painting/concepts2.html
+ 		
+@@ -74,7 +81,8 @@
+ 	/**
+ 	 * Get the drawing this object belongs to
+ 	 */
+-	public VPathway getDrawing() {
++	public VPathway getDrawing()
++	{
+ 		return canvas;
+ 	}
+ 	
+@@ -87,22 +95,44 @@
+ 		if(isHighlighted)
+ 		{
+ 			isHighlighted = false;
++			highlightColor = null;
+ 			markDirty();
+ 		}
+ 	}
+ 
++	private Color highlightColor;
++	public Color getHighlightColor()
++	{
++		return highlightColor;
++	}
++	
++	private boolean isHighlighted;
++
+ 	/**
+-	 * Besides setting isHighlighted, this accomplishes this:
+-	 * - marking the area dirty, so the object has a chance to redraw itself in highlighted state
++	 Besides setting isHighlighted, this accomplishes this:
++	 - marking the area dirty, so the object has a chance to redraw itself in highlighted state
++
++	 @param c this will highlight in a particular color. See
++	 highlight() without parameter if you just want to highlight with
++	 the default color
+ 	 */
+-	public void highlight()
++	public void highlight(Color c)
+ 	{
+-		if(!isHighlighted)
++		if(!(isHighlighted && highlightColor == c))
+ 		{
+ 			isHighlighted = true;
++			highlightColor = c;
+ 			markDirty();
+ 		}
+ 	}
++
++	/**
++	   highlight this element with the default highlight color
++	 */
++	public void highlight()
++	{
++		highlight (GlobalPreference.getValueColor(GlobalPreference.COLOR_HIGHLIGHTED));
++	}
+ 	
+ 	/**
+ 	 * Returns true if this object is highlighted, false otherwise
+Index: trunk/src/core/org/pathvisio/view/GeneProduct.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 976)
+@@ -114,10 +114,12 @@
+ 	
+ 	public void drawHighlight(Graphics2D g)
+ 	{
+-		if(isHighlighted()) {
+-			int os = 1;
+-			g.setColor(highlightColor);
+-			g.drawRect(getVLeft() - os, getVTop() - os, getVWidth() + 2*os, getVHeight() + 2*os);
++		if(isHighlighted())
++		{
++			Color hc = getHighlightColor();
++			g.setColor(new Color (hc.getRed(), hc.getGreen(), hc.getBlue(), 128));
++			g.setStroke (new BasicStroke (HIGHLIGHT_STROKE_WIDTH));
++			g.drawRect(getVLeft(), getVTop(), getVWidth(), getVHeight());
+ 		}
+ 	}
+ }
+Index: trunk/src/core/org/pathvisio/view/Line.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Line.java	(revision 975)
++++ trunk/src/core/org/pathvisio/view/Line.java	(revision 976)
+@@ -88,33 +88,35 @@
+ 			points.add(i, pNew);
+ 		}
+ 	}
+-			
++
+ 	public void doDraw(Graphics2D g)
+ 	{
+-		Color c = gdata.getColor();
++		Color c;
++		Line2D l = getVLine();
++		Point2D start = l.getP1();
++		Point2D end = l.getP2();
++		
+ 		if(isSelected()) {
+ 			c = selectColor;
+-		} else if (isHighlighted()) {
+-			c = highlightColor;
++		} else {
++			c = gdata.getColor(); 
+ 		}
+ 		g.setColor(c);
+-				
++
+ 		int ls = gdata.getLineStyle();
+ 		if (ls == LineStyle.SOLID) {
+ 			g.setStroke(new BasicStroke());
+ 		}
+ 		else if (ls == LineStyle.DASHED) { 
+-			g.setStroke(new BasicStroke(1, 
+-									BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 
+-									10, new float[] {4, 4}, 0));
++			g.setStroke	(new BasicStroke (
++				  1, 
++				  BasicStroke.CAP_SQUARE,
++				  BasicStroke.JOIN_MITER, 
++				  10, new float[] {4, 4}, 0));
+ 		}			
+ 
+-		Line2D l = getVLine();
+-		Point2D start = l.getP1();
+-		Point2D end = l.getP2();
+-		
+ 		g.draw(l);
+-		
++
+ 		double xs = start.getX();
+ 		double ys = start.getY();
+ 		double xe = end.getX();
+@@ -142,8 +144,17 @@
+ 				paintLigand(g, xs, ys, xe, ye, vFromM(LIGANDWIDTH), vFromM(LIGANDHEIGHT));
+ 			}
+ 			break;
++		}
++		
++		if (isHighlighted())
++		{
++			Color hc = getHighlightColor();
++			g.setColor(new Color (hc.getRed(), hc.getGreen(), hc.getBlue(), 128));
++			g.setStroke (new BasicStroke (HIGHLIGHT_STROKE_WIDTH));
++			g.draw(l);
++		}
++
+ 	}
+-	}
+ 	
+ 	private double getAngle(double xs, double ys, double xe, double ye) {
+ 		if(xs == xe && ys == ye) return 0; //Unable to determine direction
+Index: trunk/tools/gpmldiff/gpmldiff.sh
+===================================================================
+--- trunk/tools/gpmldiff/gpmldiff.sh	(revision 975)
++++ trunk/tools/gpmldiff/gpmldiff.sh	(revision 976)
+@@ -1,6 +1,31 @@
+ #!/bin/sh
+ MYCLASSPATH=\
+ build:\
+-../../lib/jdom.jar
++../../lib/BrowserLauncher.jar:\
++../../lib/batik/batik-awt-util.jar:\
++../../lib/batik/batik-bridge.jar:\
++../../lib/batik/batik-css.jar:\
++../../lib/batik/batik-dom.jar:\
++../../lib/batik/batik-ext.jar:\
++../../lib/batik/batik-extension.jar:\
++../../lib/batik/batik-gvt.jar:\
++../../lib/batik/batik-parser.jar:\
++../../lib/batik/batik-script.jar:\
++../../lib/batik/batik-svg-dom.jar:\
++../../lib/batik/batik-svggen.jar:\
++../../lib/batik/batik-transcoder.jar:\
++../../lib/batik/batik-util.jar:\
++../../lib/batik/batik-xml.jar:\
++../../lib/batik/pdf-transcoder.jar:\
++../../lib/batik/xml-apis.jar:\
++../../lib/derby.jar:\
++../../lib/jdom.jar:\
++../../lib/org.eclipse.core.commands.jar:\
++../../lib/org.eclipse.equinox.common.jar:\
++../../lib/org.eclipse.equinox.supplement.jar:\
++../../lib/org.eclipse.jface.jar:\
++../../lib/resources.jar:\
++../../lib/swt-linux-lib/swt.jar:\
++../../lib/swt-linux-lib.jar
+ 
+ java -cp $MYCLASSPATH org.pathvisio.gpmldiff.GpmlDiff $1 $2
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/TODO.txt
+===================================================================
+--- trunk/tools/gpmldiff/TODO.txt	(revision 975)
++++ trunk/tools/gpmldiff/TODO.txt	(revision 976)
+@@ -1,6 +1,19 @@
++IMPORTANT
++
++* Brace as Shape -> Highlighing of Brace is now merely a rectangle
++
+ * consistent naming: this vs other, doc1 vs doc2 ---> old vs new
++
++* old and new headers in svg output (including filenames)
++
++* Make similarity function more flexible. There must be a minimum
++  similarity. Can two different object types match? Should there be a
++  priority score per Attribute?
++
++LATER
++
+ * add timing code
+-* Outputter for xml output
+-* Make similarity function more flexible. Right now, if two elts have different tag names, they match 0 because the keys don't match
+-* Test with lot's of Biopax content
+-* Make Dgpmldiff output entire jdom tree instead of summary
++
++* Test with lot's of Biopax content (or maybe just ignore biopax content?)
++
++* Patch tool using Dgpml input, with adjustable fuzz factor
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java	(revision 976)
+@@ -19,6 +19,9 @@
+ import java.io.*;
+ import org.jdom.*;
+ import org.jdom.output.*;
++import org.pathvisio.model.GpmlFormat;
++import org.pathvisio.model.ConverterException;
++import org.pathvisio.debug.Logger;
+ 
+ /**
+    Naive implementation of Outputter.
+@@ -26,14 +29,17 @@
+ class DgpmlOutputter extends DiffOutputter
+ {
+ 	Document doc = null;
++	OutputStream out;
+ 	
+-	DgpmlOutputter(File f)
++	DgpmlOutputter(File f) throws IOException
+ 	{
+-		//TODO: open file
++		this();
++		out = new FileOutputStream(f);
+ 	}
+ 	
+ 	DgpmlOutputter()
+ 	{
++		out = System.out;
+ 		doc = new Document();
+ 		doc.setRootElement (new Element("Delta"));
+ 	}
+@@ -44,6 +50,7 @@
+ 		Format f = xmlcode.getFormat();
+ 		f.setEncoding("ISO-8859-1");
+ 		f.setTextMode(Format.TextMode.PRESERVE);
++		f.setLineSeparator(System.getProperty("line.separator"));
+ 		xmlcode.setFormat(f);
+ 		
+ 		//Open a filewriter
+@@ -54,21 +61,36 @@
+ 	public void insert(PwyElt newElt)
+ 	{
+ 		Element e = (new Element("Insert"));
+-		e.setText (newElt.summary());
++		try
++		{
++			Element f = GpmlFormat.createJdomElement(newElt.getElement(), GpmlFormat.GPML);
++			e.addContent (f);
++		}
++		catch (ConverterException ex) { Logger.log.error ("Converter exception", ex); }
+ 		doc.getRootElement().addContent(e);
+ 	}
+ 
+ 	public void delete(PwyElt oldElt)
+ 	{
+ 		Element e = (new Element("Delete"));
+-		e.setText (oldElt.summary());
++		try
++		{
++			Element f = GpmlFormat.createJdomElement(oldElt.getElement(), GpmlFormat.GPML);
++			e.addContent (f);
++		}
++		catch (ConverterException ex) { Logger.log.error ("Converter exception", ex); }
+ 		doc.getRootElement().addContent(e);
+ 	}
+ 
+-	public void modify(PwyElt newElt, String path, String oldVal, String newVal)
++	public void modify(PwyElt oldElt, PwyElt newElt, String path, String oldVal, String newVal)
+ 	{
+ 		Element e = (new Element("Modify"));
+-		e.setText (newElt.summary());
++		try
++		{
++			Element f = GpmlFormat.createJdomElement(oldElt.getElement(), GpmlFormat.GPML);
++			e.addContent (f);
++		}
++		catch (ConverterException ex) { Logger.log.error ("Converter exception", ex); }
+ 		e.setAttribute("path", path);
+ 		e.setAttribute("old", oldVal);
+ 		e.setAttribute("new", newVal);
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java	(revision 976)
+@@ -45,7 +45,7 @@
+ 	   @param oldVal is the old value of that tag / attribute
+ 	   @param newVal is the new value of that tag / attribute
+ 	 */
+-	abstract public void modify(PwyElt newElt, String path, String oldVal, String newVal);
++	abstract public void modify(PwyElt oldElt, PwyElt newElt, String path, String oldVal, String newVal);
+ 
+ 	/**
+ 	   Write all pending output to file or flush output buffers,
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 976)
+@@ -16,74 +16,59 @@
+ //
+ package org.pathvisio.gpmldiff;
+ 
+-import org.jdom.*;
+ import java.util.*;
++import org.pathvisio.model.PathwayElement;
++import org.pathvisio.model.PropertyType;
+ 
+ /**
+    A single element in a pathway, which can be a line, shape, datanode, etc.
+ */
+ class PwyElt
+ {
+-	Element elt;
++	PathwayElement elt;
++	public PathwayElement getElement () { return elt; }
++	
+ 	Map<String, String> contents = new HashMap<String, String>();
+ 	
+ 	public Map<String, String> getContents() { return contents; }
+ 	
+-	PwyElt(Element _elt)
++	PwyElt(PathwayElement _elt)
+ 	{
+ 		assert (_elt != null);
+ 		elt = _elt;
+ 		
+-		copyContents(elt, "");
++		copyContents();
+ 	}
+ 
+-	/**
+-	   Recursive function that copies all attributes and children of an element
+-	   to a list of strings.
+-	*/
+-	private void copyContents(Element elt, String base)
++	private void copyContents()
+ 	{
+-		String newb = base + "/" + elt.getName();
+-				
+-		// copy text value, if there is one
+-		String txt = elt.getTextTrim();
+-		if (txt.length() > 0)
++		for (PropertyType prop : elt.getAttributes(true))
+ 		{
+-			contents.put (newb + ".text()", txt);
++			String attr = prop.tag();
++			String val = "" + elt.getProperty (prop);
++			contents.put (attr, val);
+ 		}
+-		// copy attributes
+-		for (Attribute a : (List<Attribute>)elt.getAttributes())
+-		{
+-			contents.put (newb + "." + a.getName(), a.getValue());
+-		}
+-		// recursively copy children
+-		for (Element child : (List<Element>)elt.getChildren())
+-		{
+-			copyContents (child, newb);
+-		}
+ 	}
+-		
++			
+ 	String summary()
+ 	{
+-		String result = "[" + elt.getName();
++		String result = "[" + elt.getObjectType();
+ 		String tmp;
+-		if ((tmp = elt.getAttributeValue("TextLabel")) != null) result += ",lbl=" + tmp;
+-		if ((tmp = elt.getAttributeValue("ObjectType")) != null) result += ",ot=" + tmp;
+-		for (Element g : (List<Element>)elt.getChildren("Graphics", elt.getNamespace()))
+-		{
+-			if ((tmp = g.getAttributeValue("Width")) != null) result += ",w=" + tmp;
+-			if ((tmp = g.getAttributeValue("Height")) != null) result += ",h=" + tmp;
+-			
+-			int i = 0;
+-			for (Element p : (List<Element>)g.getChildren("Point", elt.getNamespace()))
+-			{
+-				i++;
+-				result += ",x" + i + "=" + p.getAttributeValue("x");
+-				result += ",y" + i + "=" + p.getAttributeValue("y");
+-			}
+-		}
+-		if ((tmp = elt.getAttributeValue("CenterX")) != null) result += ",cx=" + tmp;
+-		if ((tmp = elt.getAttributeValue("CenterY")) != null) result += ",cy=" + tmp;
++		List<PropertyType> props = elt.getAttributes(true);
++		if (props.contains(PropertyType.TEXTLABEL))
++			result += ",lbl=" + elt.getProperty(PropertyType.TEXTLABEL);
++		if (props.contains(PropertyType.WIDTH))
++			result += ",w=" + elt.getProperty(PropertyType.WIDTH);
++		if (props.contains(PropertyType.HEIGHT))
++			result += ",h=" + elt.getProperty(PropertyType.HEIGHT);
++		if (props.contains(PropertyType.CENTERX))
++			result += ",cx=" + elt.getProperty(PropertyType.CENTERX);
++		if (props.contains(PropertyType.CENTERY))
++			result += ",cy=" + elt.getProperty(PropertyType.CENTERY);
++		if (props.contains(PropertyType.STARTX))
++			result += ",x1=" + elt.getProperty(PropertyType.STARTX);
++		if (props.contains(PropertyType.STARTY))
++			result += ",y1=" + elt.getProperty(PropertyType.STARTY);		
+ 		result += "]";
+ 		return result;
+ 	}
+@@ -98,7 +83,7 @@
+ 			{
+ 				if (!contents.get(key).equals(other.contents.get(key)))
+ 				{
+-					outputter.modify (this, key, contents.get(key), other.contents.get(key));
++					outputter.modify (this, other, key, contents.get(key), other.contents.get(key));
+ 				}
+ 			}
+ 		}			
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgMain.java	(revision 976)
+@@ -24,47 +24,65 @@
+ import org.w3c.dom.Document;
+ import org.w3c.dom.DOMImplementation;
+ import org.pathvisio.view.VPathway;
++import org.pathvisio.view.VPathwayElement;
+ import org.pathvisio.model.Pathway;
+ import org.pathvisio.model.ConverterException;
+ 
+ class SvgMain
+ {
+-	public void paint (Graphics2D g2d)
+-	{
+-		g2d.setPaint (Color.red);
+-		g2d.fill (new Rectangle (10, 10, 100, 100));
+-	}
+-	
+ 	static public void main (String argv[]) throws IOException, ConverterException
+ 	{
+ 		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+ 		String svgNS = "http://www.w3.org/2000/svg";
+ 		Document document = domImpl.createDocument (svgNS, "svg", null);
+-		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+-
+-//		SvgMain svgMain = new SvgMain();
+-//		svgMain.paint(svgGenerator);
+-
++		
+ 		Pathway pwy[] = {new Pathway(), new Pathway()};
+ 		
+-		pwy[0].readFromXml (new File ("testcases/Simple1.1.gpml"), false);
+-		pwy[1].readFromXml (new File ("testcases/Simple1.2.gpml"), false);
+-
++// 		pwy[0].readFromXml (new File ("testcases/Simple1.1.gpml"), false);
++// 		pwy[1].readFromXml (new File ("testcases/Simple1.2.gpml"), false);
++ 		pwy[0].readFromXml (new File ("testcases/sandbox070524.gpml"), false);
++ 		pwy[1].readFromXml (new File ("testcases/sandbox070522_5.gpml"), false);
+ 		
+ 		VPathway vpwy[] = {new VPathway(null), new VPathway(null)};
+-
++		
++		int[] width = new int[2];
++		int[] height = new int[2];
+ 		for (int i = 0; i < 2; ++i)
+ 		{
+ 			vpwy[i].fromGmmlData(pwy[i]);
++// 			vpwy[i].setPctZoom (50);
++			width[i] = vpwy[i].getVWidth();
++			height[i] = vpwy[i].getVHeight();
+ 		}
++
++		int maxh = height[0] > height[1] ? height[0] : height[1];		
++		int maxw = width[0] > width[1] ? width[0] : width[1];
++
++		int j = 0;
++		for (VPathwayElement e : vpwy[0].getDrawingObjects())
++		{
++			if (e instanceof org.pathvisio.view.Graphics)
++			{
++				switch (j % 5)
++				{
++				case 0: e.highlight (Color.GREEN); break;
++				case 1: e.highlight (Color.BLUE); break;
++				case 2: e.highlight (Color.YELLOW); break;
++				case 3: e.highlight (Color.RED); break;
++				case 4: break; // no highlight
++				default: assert (false);
++				}
++				j++;
++			}
++		}
++
+ 		
+-		vpwy[0].draw (svgGenerator, null, false);
+- 		AlphaComposite ac = AlphaComposite.getInstance (AlphaComposite.SRC_OVER, 1.0f);
+- 		svgGenerator.setComposite (ac);
+-		svgGenerator.setColor (new Color (0.0f, 1.0f, 1.0f, 0.5f));
+-		svgGenerator.fillRect (0,0,500,500);
+-	// 	svgGenerator.translate (10, 10);
+-// 		vpwy[1].draw (svgGenerator, null, false);
++ 		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
++		svgGenerator.setSVGCanvasSize (new Dimension (maxw * 2, maxh));
++
++		vpwy[0].draw (svgGenerator, null, true);
++ 		svgGenerator.translate (maxw, 0);
++ 		vpwy[1].draw (svgGenerator, null, true);
+ 		
+ 		boolean useCSS = true;
+ 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 976)
+@@ -17,16 +17,27 @@
+ package org.pathvisio.gpmldiff;
+ 
+ import java.io.*;
+-import org.jdom.*;
+-import org.jdom.input.SAXBuilder;
+ import java.util.*;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.PathwayElement;
++import org.pathvisio.model.ConverterException;
+ 
+ /**
+-   Contains an entire Pathway Document
++   Wrapper for org.pathvisio.model.Pathway that adds some extra
++   functionality for gpmldiff
+ */   
+ class PwyDoc
+ {
+-	private Document doc;
++	Pathway pwy;
++
++	/**
++	   return the wrapped Pathway.
++	 */
++	Pathway getPathway()
++	{
++		return pwy;
++	}
++	
+ 	private	List<PwyElt> elts = new ArrayList<PwyElt>();
+ 
+ 	/**
+@@ -36,24 +47,20 @@
+ 		
+ 	/**
+ 	   Construct a new PwyDoc from a certain file
+-	   Returns null if there is a JDOM or IO exception
++	   Returns null if there is an  IO exception
+ 	   TODO: We may want to pass on the exception?
+ 	*/
+ 	static public PwyDoc read(File f)
+ 	{
+-		PwyDoc result = null;
++		PwyDoc result = new PwyDoc();
++		result.pwy = new Pathway();
+ 		try
+ 		{
+-			SAXBuilder saxb = new SAXBuilder();		
+-			result = new PwyDoc();
+-			result.doc = saxb.build (f);
++			result.pwy.readFromXml (f, false);
+ 		}
+-		catch (JDOMException e) { e.printStackTrace(); return null; }
+-		catch (IOException e) { return null; }
+-				
+-		Element root = result.doc.getRootElement();
+-		// turn all first-level elements into a PwyElt 
+-		for (Element e : (List<Element>)root.getChildren())
++		catch (ConverterException e) { return null; }
++		
++		for (PathwayElement e : result.pwy.getDataObjects())
+ 		{
+ 			result.elts.add (new PwyElt (e));
+ 		}
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 976)
+@@ -17,6 +17,7 @@
+ package org.pathvisio.gpmldiff;
+ 
+ import java.io.*;
++import org.pathvisio.debug.Logger;
+ 
+ /**
+    Class containing main method
+@@ -45,7 +46,7 @@
+ 		}
+ 		if (error != null)
+ 		{
+-			System.out.println(error);
++			Logger.log.error (error);
+ 			printUsage();
+ 		}
+ 		return error == null;
+@@ -71,12 +72,19 @@
+ 	*/
+     public static void main(String argv[])
+ 	{
++		try
++		{
++			Logger.log.setStream (new PrintStream("log.txt"));
++		}
++		catch (IOException e) {}
+ 		if (parseCliOptions(argv))
+ 		{
+ 			PwyDoc doc1 = PwyDoc.read (fileOld);
+ 			PwyDoc doc2 = PwyDoc.read (fileNew);
+ 			SearchNode result = doc1.findCorrespondence (doc2, new BasicSim(), new BasicCost());
+-			DiffOutputter out = new DgpmlOutputter();
++// 			DiffOutputter out = new DgpmlOutputter();
++
++			DiffOutputter out = new SvgOutputter(doc1, doc2);
+ 			doc1.writeResult (result, doc2, out);
+ 			try
+ 			{
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 0)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 976)
+@@ -0,0 +1,131 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.gpmldiff;
++
++import java.awt.Color;
++import java.awt.Dimension;
++import java.io.*;
++import org.apache.batik.dom.GenericDOMImplementation;
++import org.apache.batik.svggen.SVGGraphics2D;
++import org.pathvisio.model.ConverterException;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.PathwayElement;
++import org.pathvisio.view.Graphics;
++import org.pathvisio.view.VPathway;
++import org.pathvisio.view.VPathwayElement;
++import org.w3c.dom.DOMImplementation;
++import org.w3c.dom.Document;
++
++class SvgOutputter extends DiffOutputter
++{
++	OutputStream out;
++	PwyDoc oldPwy;
++	PwyDoc newPwy;
++	VPathway vpwy[] = {new VPathway(null), new VPathway(null)};
++	
++	SvgOutputter(PwyDoc _oldPwy, PwyDoc _newPwy, File f) throws IOException
++	{
++		this(_oldPwy, _newPwy);
++		out = new FileOutputStream(f);
++	}
++	
++	SvgOutputter(PwyDoc _oldPwy, PwyDoc _newPwy)
++	{
++		out = System.out;
++		oldPwy = _oldPwy;
++		newPwy = _newPwy;
++
++		vpwy[0].fromGmmlData (oldPwy.getPathway());
++		vpwy[1].fromGmmlData (newPwy.getPathway());
++	}
++
++	public void flush() throws IOException
++	{
++		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
++		String svgNS = "http://www.w3.org/2000/svg";
++		Document document = domImpl.createDocument (svgNS, "svg", null);
++
++		int[] width = new int[2];
++		int[] height = new int[2];
++		for (int i = 0; i < 2; ++i)
++		{
++ 			vpwy[i].setPctZoom (50);
++			width[i] = vpwy[i].getVWidth();
++			height[i] = vpwy[i].getVHeight();
++		}
++
++		int maxh = height[0] > height[1] ? height[0] : height[1];		
++		int maxw = width[0] > width[1] ? width[0] : width[1];
++
++		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
++		svgGenerator.setSVGCanvasSize (new Dimension (width[0] + width[1], maxh));
++
++		vpwy[0].draw (svgGenerator, null, true);
++ 		svgGenerator.translate (width[0], 0);
++ 		vpwy[1].draw (svgGenerator, null, true);
++		
++		boolean useCSS = true;
++		Writer out = new OutputStreamWriter (System.out, "UTF-8");
++		svgGenerator.stream (out, useCSS);
++
++	}
++	
++	public void insert(PwyElt newElt)
++	{
++		VPathwayElement velt = findElt (newElt, vpwy[0]);
++		assert (velt != null);
++		velt.highlight (Color.GREEN);
++	}
++
++	public void delete(PwyElt oldElt)
++	{
++		VPathwayElement velt = findElt (oldElt, vpwy[1]);
++		assert (velt != null);
++		velt.highlight (Color.RED);
++	}
++
++	public void modify(PwyElt oldElt, PwyElt newElt, String path, String oldVal, String newVal)
++	{
++		VPathwayElement velt = findElt (oldElt, vpwy[0]);
++		assert (velt != null);
++		velt.highlight (Color.YELLOW);
++		velt = findElt (newElt, vpwy[1]);
++		assert (velt != null);
++		velt.highlight (Color.YELLOW);
++	}
++
++	/**
++	   helper to find a VPathwayElt that corresponds to a certain PwyElt
++	*/
++	private VPathwayElement findElt (PwyElt elt, VPathway vpwy)
++	{
++		PathwayElement target = elt.getElement();
++		for (VPathwayElement velt : vpwy.getDrawingObjects())
++		{
++			if (velt instanceof Graphics)
++			{
++				Graphics g = (Graphics)velt;
++				if (g.getGmmlData() == target)
++				{
++					return velt;
++				}
++			}
++		}
++		return null;
++	}
++
++}
+
+Property changes on: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java	(revision 975)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java	(revision 976)
+@@ -50,7 +50,7 @@
+ 		output.println ("delete: " + oldElt.summary());
+ 	}
+ 
+-	public void modify(PwyElt newElt, String path, String oldVal, String newVal)
++	public void modify(PwyElt oldElt, PwyElt newElt, String path, String oldVal, String newVal)
+ 	{
+ 		output.println ("modify: " + newElt.summary() + "[" + path + ": '" + oldVal + "' -> '" + newVal + "']");
+ 	}

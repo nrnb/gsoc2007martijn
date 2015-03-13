@@ -1,0 +1,1000 @@
+Index: trunk/src/test/org/pathvisio/model/Test.java
+===================================================================
+--- trunk/src/test/org/pathvisio/model/Test.java	(revision 1019)
++++ trunk/src/test/org/pathvisio/model/Test.java	(revision 1020)
+@@ -157,17 +157,21 @@
+ 	public void testRefUniq()
+ 	{
+ 		// test for uniqueness
+-		o.setGraphId("1");
+-
++		o.setGraphId("123");
++		
+ 		PathwayElement o2 = new PathwayElement(ObjectType.DATANODE);
+ 		data.add (o2);
++		assertSame (o.getParent(), o2.getParent());
++		assertEquals ("Setting graphId on first element", o.getGraphId(), "123");
+ 		try
+-		{			
++		{
++			o2.setGraphId("123");
+ 			// try setting the same id again
+-			o2.setGraphId("1");
+ 			fail("shouldn't be able to set the same id twice");
+ 		}
+-		catch (IllegalArgumentException e) {}
++		catch (IllegalArgumentException e)
++		{
++		}
+ 		
+ 		// test random id
+ 		String x = data.getUniqueId();
+@@ -282,13 +286,13 @@
+ 		assertTrue (data.getDataObjects().contains(mi));
+ 		assertNotNull (mi);
+ 
+-		try
+-		{
+-			mi = new PathwayElement(ObjectType.MAPPINFO);
+-			data.add (mi);
+-			fail("data should already have a MAPPINFO and shouldn't accept more");
+-		}
+-		catch (IllegalArgumentException e) {}
++		// test that adding a new mappinfo object replaces the old one.
++		PathwayElement mi2 = new PathwayElement(ObjectType.MAPPINFO);
++		data.add (mi2); 
++		assertSame ("MappInfo should be replaced", data.getMappInfo(), mi2); 
++		assertNotSame ("Old MappInfo should be gone", data.getMappInfo(), mi);
++		assertNull ("Old MappInfo should not have a parent anymore", mi.getParent());
++		assertSame ("New MappInfo should now have a parent", mi2.getParent(), data);
+ 		
+ 		mi = data.getMappInfo();
+ 		try
+@@ -312,13 +316,12 @@
+ 		assertNotNull (ib);
+ 		assertEquals (ib.getObjectType(), ObjectType.INFOBOX); 
+ 
+-		try
+-		{
+-			ib = new PathwayElement(ObjectType.INFOBOX);
+-			data.add (ib);
+-			fail("data should already have a MAPPINFO and shouldn't accept more");
+-		}
+-		catch (IllegalArgumentException e) {}
++		PathwayElement ib2 = new PathwayElement(ObjectType.INFOBOX);
++		data.add (ib2);
++		assertSame ("Infobox should be replaced", data.getInfoBox(), ib2); 
++		assertNotSame ("Old Infobox should be gone", data.getInfoBox(), ib);
++		assertNull ("Old Infobox should not have a parent anymore", ib.getParent());
++		assertSame ("New Infobox should now have a parent", ib2.getParent(), data);
+ 		
+ 		ib = data.getMappInfo();
+ 		try
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1019)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 1020)
+@@ -18,6 +18,9 @@
+ 
+ import java.awt.Color;
+ import java.io.File;
++import java.io.FileWriter;
++import java.io.IOException;
++import java.io.InputStream;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.Collections;
+@@ -25,13 +28,25 @@
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+-
++import javax.xml.XMLConstants;
++import javax.xml.transform.stream.StreamSource;
++import javax.xml.validation.Schema;
++import javax.xml.validation.SchemaFactory;
++import javax.xml.validation.ValidatorHandler;
+ import org.jdom.Attribute;
+ import org.jdom.Content;
+ import org.jdom.Document;
+ import org.jdom.Element;
++import org.jdom.JDOMException;
+ import org.jdom.Namespace;
++import org.jdom.input.JDOMParseException;
++import org.jdom.input.SAXBuilder;
++import org.jdom.output.Format;
++import org.jdom.output.SAXOutputter;
++import org.jdom.output.XMLOutputter;
+ import org.pathvisio.Engine;
++import org.pathvisio.debug.Logger;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * class responsible for interaction with Gpml format.
+@@ -49,6 +64,11 @@
+ 	public static final Namespace RDFS = Namespace.getNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+ 	public static final Namespace BIOPAX = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
+ 	public static final Namespace OWL = Namespace.getNamespace("owl", "http://www.w3.org/2002/07/owl#");
++
++	/**
++	 * name of resource containing the gpml schema definition
++	 */
++	final private static String xsdFile = "GPML.xsd";
+ 	
+ 	private static class AttributeInfo
+ 	{
+@@ -348,9 +368,19 @@
+ 		
+ 		return doc;
+ 	}
+-	
+-	public static void mapElement(Element e, Pathway p) throws ConverterException
++
++	/**
++	   Fill out a single PathwayElement based on a piece of Jdom tree. Used also by Patch utility
++	 */
++	public static void mapElement(PathwayElement o, Element e) throws ConverterException
+ 	{
++	}
++
++	/**
++	   Read a piece of Jdom tree, create a PathwayElement based on that and add it to the Pathway.
++	 */
++	private static void mapElement(Element e, Pathway p) throws ConverterException
++	{
+ 		String tag = e.getName();
+ 		int ot = ObjectType.getTagMapping(tag);
+ 		if (ot == -1)
+@@ -379,7 +409,8 @@
+ 			o = new PathwayElement(ot);
+ 			p.add (o);
+ 		}
+-		
++
++		mapElement (o, e);
+ 		switch (o.getObjectType())
+ 		{
+ 			case ObjectType.DATANODE:
+@@ -1036,5 +1067,119 @@
+ 	public String getName() {
+ 		return "GPML file";
+ 	}
++	
++	/**
++	 * Writes the JDOM document to the file specified
++	 * @param file	the file to which the JDOM document should be saved
++	 * @param validate if true, validate the dom structure before writing to file. If there is a validation error, 
++	 * 		or the xsd is not in the classpath, an exception will be thrown. 
++	 */
++	static public void writeToXml(Pathway pwy, File file, boolean validate) throws ConverterException 
++	{
++		Document doc = createJdom(pwy);
++		
++		//Validate the JDOM document
++		if (validate) validateDocument(doc);
++		//			Get the XML code
++		XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
++		Format f = xmlcode.getFormat();
++		f.setEncoding("ISO-8859-1");
++		f.setTextMode(Format.TextMode.PRESERVE);
++		xmlcode.setFormat(f);
++		
++		//Open a filewriter
++		try
++		{
++			FileWriter writer = new FileWriter(file);
++			//Send XML code to the filewriter
++			xmlcode.output(doc, writer);
++		}
++		catch (IOException ie)
++		{
++			throw new ConverterException(ie);
++		}
++	}
++	
++	static public void readFromXml(Pathway pwy, File file, boolean validate) throws ConverterException
++	{
++		// Start XML processing
++		Logger.log.info("Start reading the XML file: " + file);
++		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
++		// try to read the file; if an error occurs, catch the exception and print feedback
++		try
++		{
++			// build JDOM tree
++			Document doc = builder.build(file);
+ 
++			if (validate) validateDocument(doc);
++			
++			// Copy the pathway information to a VPathway
++			Element root = doc.getRootElement();
++			
++			mapElement(root, pwy); // MappInfo
++			
++			// Iterate over direct children of the root element
++			for (Object e : root.getChildren())
++			{
++				mapElement((Element)e, pwy);
++			}			
++		}
++		catch(JDOMParseException pe) 
++		{
++			 throw new ConverterException (pe);
++		}
++		catch(JDOMException e)
++		{
++			throw new ConverterException (e);
++		}
++		catch(IOException e)
++		{
++			throw new ConverterException (e);
++		}
++		catch(NullPointerException e)
++		{
++			throw new ConverterException (e);
++		}
++	}
++
++	/**
++	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
++	 * @param doc the document to validate
++	 */
++	public static void validateDocument(Document doc) throws ConverterException
++	{	
++		ClassLoader cl = Pathway.class.getClassLoader();
++		InputStream is = cl.getResourceAsStream(xsdFile);
++		if(is != null) {	
++			Schema schema;
++			try {
++				SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
++				StreamSource ss = new StreamSource (is);
++				schema = factory.newSchema(ss);
++				ValidatorHandler vh =  schema.newValidatorHandler();
++				SAXOutputter so = new SAXOutputter(vh);
++				so.output(doc);
++				// If no errors occur, the file is valid according to the gpml xml schema definition
++				//TODO: open dialog to report error
++				Logger.log.info("Document is valid according to the xml schema definition '" + 
++						xsdFile.toString() + "'");
++			} catch (SAXException se) {
++				Logger.log.error("Could not parse the xml-schema definition", se);
++				throw new ConverterException (se);
++			} catch (JDOMException je) {
++				Logger.log.error("Document is invalid according to the xml-schema definition!: " + 
++						je.getMessage(), je);
++				XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
++				
++				Logger.log.error("The invalid XML code:\n" + xmlcode.outputString(doc));
++				throw new ConverterException (je);
++			}
++		} else {
++			Logger.log.error("Document is not validated because the xml schema definition '" + 
++					xsdFile + "' could not be found in classpath");
++			throw new ConverterException ("Document is not validated because the xml schema definition '" + 
++					xsdFile + "' could not be found in classpath");
++		}
++	}
++
+ }
+\ No newline at end of file
+Index: trunk/src/core/org/pathvisio/model/SvgFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/SvgFormat.java	(revision 1019)
++++ trunk/src/core/org/pathvisio/model/SvgFormat.java	(revision 1020)
+@@ -430,4 +430,31 @@
+ 			throw new ConverterException(ie);
+ 		}
+ 	}
++
++	static public void writeToSvg (Pathway pwy, File file) throws ConverterException
++	{
++		Document doc = SvgFormat.createJdom(pwy);
++		
++		//Validate the JDOM document
++//		if (validate) validateDocument(doc);
++		//			Get the XML code
++		
++		XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
++		Format f = xmlcode.getFormat();
++		f.setEncoding("ISO-8859-1");
++		f.setTextMode(Format.TextMode.PRESERVE);
++		xmlcode.setFormat(f);
++		
++		//Open a filewriter
++		try
++		{
++			FileWriter writer = new FileWriter(file);
++			//Send XML code to the filewriter
++			xmlcode.output(doc, writer);
++		}
++		catch (IOException ie)
++		{
++			throw new ConverterException(ie);
++		}
++	}
+ }
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1019)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 1020)
+@@ -17,9 +17,6 @@
+ package org.pathvisio.model;
+ 
+ import java.io.File;
+-import java.io.FileWriter;
+-import java.io.IOException;
+-import java.io.InputStream;
+ import java.text.SimpleDateFormat;
+ import java.util.ArrayList;
+ import java.util.Date;
+@@ -29,26 +26,8 @@
+ import java.util.List;
+ import java.util.Random;
+ import java.util.Set;
+-
+-import javax.xml.XMLConstants;
+-import javax.xml.transform.stream.StreamSource;
+-import javax.xml.validation.Schema;
+-import javax.xml.validation.SchemaFactory;
+-import javax.xml.validation.ValidatorHandler;
+-
+-import org.jdom.Document;
+-import org.jdom.Element;
+-import org.jdom.JDOMException;
+-import org.jdom.input.JDOMParseException;
+-import org.jdom.input.SAXBuilder;
+-import org.jdom.output.Format;
+-import org.jdom.output.SAXOutputter;
+-import org.jdom.output.XMLOutputter;
+-import org.pathvisio.debug.Logger;
+ import org.pathvisio.model.GraphLink.GraphRefContainer;
+-import org.xml.sax.SAXException;
+ 
+-
+ /**
+ * This class is the model for pathway data. It is responsible for
+ * storing all information necessary for maintaining, loading and saving
+@@ -88,13 +67,8 @@
+ 	 * @deprecated
+ 	 */
+ 	final public static int OLD_GMMLZOOM = 15;
+-	
++		
+ 	/**
+-	 * name of resource containing the gpml schema definition
+-	 */
+-	final private static String xsdFile = "GPML.xsd";
+-	
+-	/**
+ 	 * List of contained dataObjects
+ 	 */
+ 	private List<PathwayElement> dataObjects = new ArrayList<PathwayElement>();
+@@ -115,8 +89,6 @@
+ 	
+ 	/**
+ 	 * get the one and only MappInfo object.
+-	 * There is no setter, a MappInfo object is automatically
+-	 * created in the constructor.
+ 	 * 
+ 	 * @return a PathwayElement with ObjectType set to mappinfo.
+ 	 */
+@@ -126,9 +98,17 @@
+ 	}
+ 
+ 	/**
++	   overwrite current mappInfo
++	 */
++	public void setMappInfo(PathwayElement value)
++	{
++		assert (value != null);
++		assert (value.getObjectType() == ObjectType.MAPPINFO);
++		mappInfo = value;
++	}
++	
++	/**
+ 	 * get the one and only InfoBox object.
+-	 * There is no setter, a MappInfo object is automatically
+-	 * created in the constructor.
+ 	 * 
+ 	 * @return a PathwayElement with ObjectType set to mappinfo.
+ 	 */
+@@ -136,16 +116,30 @@
+ 	{
+ 		return infoBox;
+ 	}
+-	
+-	public PathwayElement getBiopax() {
++
++	public void setInfoBox(PathwayElement value)
++	{
++		assert (value != null);
++		assert (value.getObjectType() == ObjectType.INFOBOX);
++	    infoBox = value;
++	}
++
++
++	/**
++	   note: may return null.
++	 */
++	public PathwayElement getBiopax()
++	{
+ 		return biopax;
+ 	}
+ 	
+-	public void createBiopax() {
++	public void createBiopax()
++	{
+ 		biopax = new PathwayElement(ObjectType.BIOPAX);
+ 		this.add(biopax);
+ 	}
+-		
++
++
+ 	/**
+ 	 * Add a PathwayElement to this Pathway.
+ 	 * takes care of setting parent and removing from possible previous
+@@ -157,13 +151,28 @@
+ 	 */
+ 	public void add (PathwayElement o)
+ 	{
+-		if (o.getObjectType() == ObjectType.MAPPINFO && o != mappInfo)
+-			throw new IllegalArgumentException("Can't add more mappinfo objects");
+-		if (o.getObjectType() == ObjectType.INFOBOX && o != infoBox)
+-			throw new IllegalArgumentException("Can't add more infobox objects");
+-		if(o.getObjectType() == ObjectType.BIOPAX && biopax != null && o != biopax) {
+-			throw new IllegalArgumentException("Can't add more biopax objects");
++		assert (o != null);
++		// There can be only one mappInfo object, so if we're trying to add it, remove the old one.
++		if (o.getObjectType() == ObjectType.MAPPINFO && o != mappInfo && mappInfo != null)
++		{
++			replaceUnique (mappInfo, o);
++			mappInfo = o;
++			return;
+ 		}
++		// There can be only one InfoBox object, so if we're trying to add it, remove the old one.
++		if (o.getObjectType() == ObjectType.INFOBOX && o != infoBox && infoBox != null)
++		{
++			replaceUnique (infoBox, o);
++			infoBox = o;
++			return;
++		}
++		// There can be zero or one Biopax object, so if we're trying to add it, remove the old one.
++		if(o.getObjectType() == ObjectType.BIOPAX && biopax != null && o != biopax)
++		{
++			replaceUnique (biopax, o);
++			biopax = o;
++			return;
++		}
+ 		if (o.getParent() == this) return; // trying to re-add the same object
+ 		if (o.getParent() != null) { o.getParent().remove(o); }
+ 		dataObjects.add(o);
+@@ -171,6 +180,24 @@
+ 		o.setParent(this);
+ 		fireObjectModifiedEvent(new PathwayEvent(o, PathwayEvent.ADDED));
+ 	}
++
++	/**
++	   called for biopax, infobox and mappInfo upon addition.
++	 */
++	private void replaceUnique (PathwayElement oldElt, PathwayElement newElt)
++	{
++		assert (oldElt.getParent() == this);
++		assert (oldElt.getObjectType() == newElt.getObjectType());
++		assert (newElt.getParent() == null);
++		assert (oldElt != newElt);
++		fireObjectModifiedEvent (new PathwayEvent (oldElt, PathwayEvent.DELETED));
++		oldElt.removeListener (this);
++		dataObjects.remove(oldElt);
++		oldElt.setParent (null);
++		newElt.addListener (this);
++		newElt.setParent (this);
++		fireObjectModifiedEvent(new PathwayEvent(newElt, PathwayEvent.ADDED));		
++	}
+ 	
+ 	/**
+ 	 * removes object
+@@ -181,6 +208,7 @@
+ 	 */
+ 	public void remove (PathwayElement o)
+ 	{
++		assert (o.getParent() == this); // can only remove direct child objects
+ 		if (o.getObjectType() == ObjectType.MAPPINFO)
+ 			throw new IllegalArgumentException("Can't remove mappinfo object!");
+ 		if (o.getObjectType() == ObjectType.INFOBOX)
+@@ -361,46 +389,6 @@
+ 		mappInfo.setVersion(dateString);
+ 		mappInfo.setMapInfoName("New Pathway");
+ 	}
+-
+-	/**
+-	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
+-	 * @param doc the document to validate
+-	 */
+-	public static void validateDocument(Document doc) throws ConverterException
+-	{	
+-		ClassLoader cl = Pathway.class.getClassLoader();
+-		InputStream is = cl.getResourceAsStream(xsdFile);
+-		if(is != null) {	
+-			Schema schema;
+-			try {
+-				SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+-				StreamSource ss = new StreamSource (is);
+-				schema = factory.newSchema(ss);
+-				ValidatorHandler vh =  schema.newValidatorHandler();
+-				SAXOutputter so = new SAXOutputter(vh);
+-				so.output(doc);
+-				// If no errors occur, the file is valid according to the gpml xml schema definition
+-				//TODO: open dialog to report error
+-				Logger.log.info("Document is valid according to the xml schema definition '" + 
+-						xsdFile.toString() + "'");
+-			} catch (SAXException se) {
+-				Logger.log.error("Could not parse the xml-schema definition", se);
+-				throw new ConverterException (se);
+-			} catch (JDOMException je) {
+-				Logger.log.error("Document is invalid according to the xml-schema definition!: " + 
+-						je.getMessage(), je);
+-				XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+-				
+-				Logger.log.error("The invalid XML code:\n" + xmlcode.outputString(doc));
+-				throw new ConverterException (je);
+-			}
+-		} else {
+-			Logger.log.error("Document is not validated because the xml schema definition '" + 
+-					xsdFile + "' could not be found in classpath");
+-			throw new ConverterException ("Document is not validated because the xml schema definition '" + 
+-					xsdFile + "' could not be found in classpath");
+-		}
+-	}
+ 		
+ 	/**
+ 	 * Writes the JDOM document to the file specified
+@@ -410,75 +398,19 @@
+ 	 */
+ 	public void writeToXml(File file, boolean validate) throws ConverterException 
+ 	{
+-		Document doc = GpmlFormat.createJdom(this);
+-		
+-		//Validate the JDOM document
+-		if (validate) validateDocument(doc);
+-		//			Get the XML code
+-		XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+-		Format f = xmlcode.getFormat();
+-		f.setEncoding("ISO-8859-1");
+-		f.setTextMode(Format.TextMode.PRESERVE);
+-		xmlcode.setFormat(f);
+-		
+-		//Open a filewriter
+-		try
+-		{
+-			FileWriter writer = new FileWriter(file);
+-			//Send XML code to the filewriter
+-			xmlcode.output(doc, writer);
+-			setSourceFile (file);
+-		}
+-		catch (IOException ie)
+-		{
+-			throw new ConverterException(ie);
+-		}
++		GpmlFormat.writeToXml (this, file, validate);
++
++		setSourceFile (file);
++
+ 	}
+-	
++
+ 	public void readFromXml(File file, boolean validate) throws ConverterException
+ 	{
+-		// Start XML processing
+-		Logger.log.info("Start reading the XML file: " + file);
+-		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
+-		// try to read the file; if an error occurs, catch the exception and print feedback
+-		try
+-		{
+-			// build JDOM tree
+-			Document doc = builder.build(file);
++		GpmlFormat.readFromXml (this, file, validate);
+ 
+-			if (validate) validateDocument(doc);
+-			
+-			// Copy the pathway information to a VPathway
+-			Element root = doc.getRootElement();
+-			
+-			GpmlFormat.mapElement(root, this); // MappInfo
+-			
+-			// Iterate over direct children of the root element
+-			Iterator it = root.getChildren().iterator();
+-			while (it.hasNext()) {
+-				GpmlFormat.mapElement((Element)it.next(), this);
+-			}
+-			
+-			setSourceFile (file);
+-		}
+-		catch(JDOMParseException pe) 
+-		{
+-			 throw new ConverterException (pe);
+-		}
+-		catch(JDOMException e)
+-		{
+-			throw new ConverterException (e);
+-		}
+-		catch(IOException e)
+-		{
+-			throw new ConverterException (e);
+-		}
+-		catch(NullPointerException e)
+-		{
+-			throw new ConverterException (e);
+-		}
++		setSourceFile (file);
+ 	}
+-	
++		
+ 	public void readFromMapp (File file) throws ConverterException
+ 	{
+         String inputString = file.getAbsolutePath();
+@@ -499,32 +431,9 @@
+ 
+ 	public void writeToSvg (File file) throws ConverterException
+ 	{
+-		Document doc = SvgFormat.createJdom(this);
+-		
+-		//Validate the JDOM document
+-//		if (validate) validateDocument(doc);
+-		//			Get the XML code
+-		
+-		XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+-		Format f = xmlcode.getFormat();
+-		f.setEncoding("ISO-8859-1");
+-		f.setTextMode(Format.TextMode.PRESERVE);
+-		xmlcode.setFormat(f);
+-		
+-		//Open a filewriter
+-		try
+-		{
+-			FileWriter writer = new FileWriter(file);
+-			//Send XML code to the filewriter
+-			xmlcode.output(doc, writer);
+-			setSourceFile (file);
+-		}
+-		catch (IOException ie)
+-		{
+-			throw new ConverterException(ie);
+-		}
++		SvgFormat.writeToSvg (this, file);
+ 	}
+-
++	
+ 	private List<PathwayListener> listeners = new ArrayList<PathwayListener>();
+ 	public void addListener(PathwayListener v) { listeners.add(v); }
+ 	public void removeListener(PathwayListener v) { listeners.remove(v); }
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 0)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java	(revision 1020)
+@@ -0,0 +1,64 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.gpmldiff;
++
++import java.io.InputStream;
++import org.jdom.*;
++import org.jdom.input.*;
++
++class Patch
++{
++	private enum ModifcationType
++	{
++		INSERTION,
++			DELETION,
++			MODIFCATION
++	}
++	
++	private class Modification
++	{
++		public ModifcationType type; 
++		public PathwayElement oldElt;
++		public PathwayElement newElt;
++		public String attr;
++		public String oldValue;
++		public String newValue;
++	}
++	
++	void readFromStream (InputStream in)
++	{
++		SAXBuilder builder = new SAXBuilder ();
++		Document doc = builder.build (in);
++
++		for (Element e : doc.getRootElement().getChildren())
++		{
++			if (e.getName().equals("Modify"))
++			{
++				Modification mod = new Modifcation();
++				GpmlFormat.
++			}
++		}
++	}
++
++	void reverse()
++	{
++	}
++
++	void applyTo (Pathway oldPwy, int fuzz)
++	{
++	}
++}
+\ No newline at end of file
+
+Property changes on: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Patch.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 0)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java	(revision 1020)
+@@ -0,0 +1,89 @@
++// PathVisio,
++// a tool for data visualization and analysis using Biological Pathways
++// Copyright 2006-2007 BiGCaT Bioinformatics
++//
++// Licensed under the Apache License, Version 2.0 (the "License"); 
++// you may not use this file except in compliance with the License. 
++// You may obtain a copy of the License at 
++// 
++// http://www.apache.org/licenses/LICENSE-2.0 
++//  
++// Unless required by applicable law or agreed to in writing, software 
++// distributed under the License is distributed on an "AS IS" BASIS, 
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
++// See the License for the specific language governing permissions and 
++// limitations under the License.
++//
++package org.pathvisio.gpmldiff;
++
++import java.io.*;
++import org.pathvisio.debug.Logger;
++import org.pathvisio.model.Pathway;
++import org.pathvisio.model.ConverterException;
++
++/**
++   Dgpml patch utility, main function
++ */
++class PatchMain
++{
++	static void printUsage()
++	{
++		System.out.println (
++			"Patch\n\n" +
++			"Applies a set of differences to a pathway\n\n" +
++			"Usage:\n" +
++			"  Patch old.gpml < patch.dgpml"
++			);
++		System.exit (1);
++	}
++
++	static File oldFile;
++	int fuzz;
++	boolean reverse;
++	
++	static boolean parseCliOptions (String argv[])
++	{
++		String error = null;
++		if (argv.length != 1) error = "One parameter expected";
++		if (error == null)
++		{
++			oldFile = new File (argv[0]);
++			if (!oldFile.exists())
++			{
++				error = argv[0] + ": File not found";
++			}
++		}
++		if (error != null)
++		{
++			Logger.log.error (error);
++			System.out.println (error);
++			printUsage();
++		}
++		return error == null;
++	}
++	
++	public static void main(String argv[])
++	{
++		Logger.log.setStream (System.err);
++		if (parseCliOptions(argv))
++		{
++			Pathway oldPwy = new Pathway();
++			try
++			{
++				oldPwy.readFromXml (oldFile, true);
++			}
++			catch (ConverterException e)
++			{
++				Logger.log.error ("Converter exception", e);
++				System.exit(1);
++			}
++			Patch patch = new Patch();
++			patch.readFromStream (System.in); // read diff from STDIN
++			if (reverse)
++			{
++				patch.reverse();
++			}
++			patch.applyTo (oldPwy, fuzz);
++		}
++	}
++}
+\ No newline at end of file
+
+Property changes on: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PatchMain.java
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+
+Index: trunk/tools/gpmldiff/patch.sh
+===================================================================
+--- trunk/tools/gpmldiff/patch.sh	(revision 0)
++++ trunk/tools/gpmldiff/patch.sh	(revision 1020)
+@@ -0,0 +1,31 @@
++#!/bin/sh
++MYCLASSPATH=\
++build:\
++../../lib/BrowserLauncher.jar:\
++../../lib/batik/batik-awt-util.jar:\
++../../lib/batik/batik-bridge.jar:\
++../../lib/batik/batik-css.jar:\
++../../lib/batik/batik-dom.jar:\
++../../lib/batik/batik-ext.jar:\
++../../lib/batik/batik-extension.jar:\
++../../lib/batik/batik-gvt.jar:\
++../../lib/batik/batik-parser.jar:\
++../../lib/batik/batik-script.jar:\
++../../lib/batik/batik-svg-dom.jar:\
++../../lib/batik/batik-svggen.jar:\
++../../lib/batik/batik-transcoder.jar:\
++../../lib/batik/batik-util.jar:\
++../../lib/batik/batik-xml.jar:\
++../../lib/batik/pdf-transcoder.jar:\
++../../lib/batik/xml-apis.jar:\
++../../lib/derby.jar:\
++../../lib/jdom.jar:\
++../../lib/org.eclipse.core.commands.jar:\
++../../lib/org.eclipse.equinox.common.jar:\
++../../lib/org.eclipse.equinox.supplement.jar:\
++../../lib/org.eclipse.jface.jar:\
++../../lib/resources.jar:\
++../../lib/swt-linux-lib/swt.jar:\
++../../lib/swt-linux-lib.jar
++
++java -cp $MYCLASSPATH org.pathvisio.gpmldiff.PatchMain $1 $2
+\ No newline at end of file
+
+Property changes on: trunk/tools/gpmldiff/patch.sh
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+Name: svn:executable
+   + *
+
+Index: trunk/tools/gpmldiff/patchtest.pl
+===================================================================
+--- trunk/tools/gpmldiff/patchtest.pl	(revision 0)
++++ trunk/tools/gpmldiff/patchtest.pl	(revision 1020)
+@@ -0,0 +1,44 @@
++#!/usr/bin/perl
++
++use warnings;
++use strict;
++
++use File::Temp qw/ tempfile /;
++
++# Test Gpmldiff and Patch.
++
++
++sub print_usage()
++{
++	print "patchtest.pl
++Tests patch and gpmldiff on two pathways.
++
++Usage:
++  patchtest.pl old.gpml new.gpml
++";	
++}
++
++my $fnOld = $ARGV[0];
++my $fnNew = $ARGV[1];
++
++if (!(-r $fnOld && -r $fnNew))
++{
++	print_usage();
++	die;
++}
++
++my $fnDgpml = new File::Temp (SUFFIX => '.dgpml');
++my $fnOldCopy = new File::Temp (SUFFIX => '.gpml');
++my $fnNewCopy = new File::Temp (SUFFIX => '.gpml');
++
++copy ($fnOld, $fnOldCopy);
++copy ($fnNew, $fnNewCopy);
++
++system ("gpmldiff.sh $fnOldCopy $fnNewCopy > $fnDgpml");
++
++system ("patch.sh $fnOldCopy < $fnDgpml");
++system ("patch.sh $fnNewCopy --reverse < $fnDgpml");
++
++# compare fnNew with fnOldCopy
++# (need to implement Pathway.equals for that)
++# compare fnOld with fnNewCopy
+
+Property changes on: trunk/tools/gpmldiff/patchtest.pl
+___________________________________________________________________
+Name: svn:eol-style
+   + native
+Name: svn:executable
+   + *
+
+Index: trunk/tools/gpmldiff/plan/TODO.txt
+===================================================================
+--- trunk/tools/gpmldiff/plan/TODO.txt	(revision 1019)
++++ trunk/tools/gpmldiff/plan/TODO.txt	(revision 1020)
+@@ -2,8 +2,10 @@
+ 
+ HIGH PRIORITY
+ 
+-* IDEA: Patch tool using Dgpml input, with adjustable fuzz factor
++* Patch tool using Dgpml input, with adjustable fuzz factor
+ 
++* Pathway.equals
++
+ * Make similarity function more flexible. There must be a minimum
+   similarity. Can two different object types match? Should there be a
+   priority score per Attribute?
+@@ -41,12 +43,16 @@
+    start : (Jun 18) Jun 18
+    status: COMPLETED
+ 
++ * Patch Utility
++   start: (not planned) Jul 11
++   status: IN PROGRESS
++ 
+  * Integration into wikipathways.org.
+-   start : (Jul 2) Jul 11
+-   status : IN PROGRESS
++   start : (Jul 2) Jul 23
++   status : NOT STARTED
+ 
+- * User testing and performance optimization (3 weeks)
+-   start : (Jul 23) Jul 30
++ * User testing and performance optimization
++   start : (Jul 23) Aug 7
+    status : NOT STARTED
+ 
+  * Integration into PathVisio (1 week)
+Index: trunk/tools/gpmldiff/build.xml
+===================================================================
+--- trunk/tools/gpmldiff/build.xml	(revision 1019)
++++ trunk/tools/gpmldiff/build.xml	(revision 1020)
+@@ -81,8 +81,9 @@
+ 		
+ 	<target name="test" depends="compile">
+ 		<javac srcdir="src"
+-					includes="**"
+-					destdir="${build.dir}">
++			   includes="**"
++			   destdir="${build.dir}"
++			   debug="true">
+ 					<classpath refid="project.class.path"/>
+ 		</javac>
+ 		<junit printsummary="on" haltonfailure="true" fork="true">

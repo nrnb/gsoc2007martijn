@@ -1,0 +1,30 @@
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 982)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 983)
+@@ -108,11 +108,9 @@
+ 		case BRACE:
+ 			GeneralPath p = new GeneralPath();
+             p.moveTo(x, y + h);
+-            p.quadTo(x, y + h/2, x + h/2, y + h/2);
+-            p.lineTo(cx - h/2, y + h/2);
++            p.quadTo(x, y + h/2, x + w/4, y + h/2);
+             p.quadTo(cx, y + h/2, cx, y);
+-            p.quadTo(cx, y + h/2, cx + h/2, y + h/2);
+-            p.lineTo(x + w - h/2, y + h/2);
++            p.quadTo(cx, y + h/2, cx + w/4, y + h/2);
+             p.quadTo(x + w, y + h/2, x + w, y + h);
+             s = p;
+ 			break;
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 982)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SvgOutputter.java	(revision 983)
+@@ -105,6 +105,7 @@
+ 		// pwy's themselves		
+  		svgGenerator.translate (0, HEADER_HIGHT);
+ 		vpwy[PWY_OLD].draw (svgGenerator, null, false);
++		svgGenerator.setClip (null); // reset clipping
+  		svgGenerator.translate (deltax, 0);
+  		vpwy[PWY_NEW].draw (svgGenerator, null, false);
+ 		

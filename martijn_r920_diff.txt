@@ -1,0 +1,2064 @@
+Index: trunk/src/test/org/pathvisio/model/Test.java
+===================================================================
+--- trunk/src/test/org/pathvisio/model/Test.java	(revision 919)
++++ trunk/src/test/org/pathvisio/model/Test.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/test/org/pathvisio/view/Test.java
+===================================================================
+--- trunk/src/test/org/pathvisio/view/Test.java	(revision 919)
++++ trunk/src/test/org/pathvisio/view/Test.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionImagePlugin.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionImagePlugin.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionImagePlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/ColorByLinkPlugin.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/ColorByLinkPlugin.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/ColorByLinkPlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionAsTextPlugin.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionAsTextPlugin.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionAsTextPlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/PluginWithColoredSamples.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/PluginWithColoredSamples.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/PluginWithColoredSamples.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionColorPlugin.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionColorPlugin.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/ExpressionColorPlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/plugins/org/pathvisio/visualization/plugins/LabelPlugin.java
+===================================================================
+--- trunk/src/plugins/org/pathvisio/visualization/plugins/LabelPlugin.java	(revision 919)
++++ trunk/src/plugins/org/pathvisio/visualization/plugins/LabelPlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v1/org/pathvisio/Globals.java
+===================================================================
+--- trunk/src/v1/org/pathvisio/Globals.java	(revision 919)
++++ trunk/src/v1/org/pathvisio/Globals.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v1/org/pathvisio/gui/MainWindow.java
+===================================================================
+--- trunk/src/v1/org/pathvisio/gui/MainWindow.java	(revision 919)
++++ trunk/src/v1/org/pathvisio/gui/MainWindow.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/wizard/RWizard.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/wizard/RWizard.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/wizard/RWizard.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/wizard/PageData.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/wizard/PageData.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/wizard/PageData.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/wizard/PageStats.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/wizard/PageStats.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/wizard/PageStats.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/RDataIn.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RDataIn.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/RDataIn.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/RCommands.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RCommands.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/RCommands.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/RDataOut.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RDataOut.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/RDataOut.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/RController.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RController.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/RController.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/StatsResultTable.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/StatsResultTable.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/StatsResultTable.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/R/RFunctionLoader.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/R/RFunctionLoader.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/R/RFunctionLoader.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/Globals.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/Globals.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/Globals.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/v2/org/pathvisio/gui/MainWindow.java
+===================================================================
+--- trunk/src/v2/org/pathvisio/gui/MainWindow.java	(revision 919)
++++ trunk/src/v2/org/pathvisio/gui/MainWindow.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PathwayImporter.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayImporter.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PathwayImporter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/UndoManager.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/UndoManager.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/UndoManager.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/ShapeType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ShapeType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/ShapeType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/UndoAction.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/UndoAction.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/UndoAction.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/MappFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/MappFormat.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PathwayExporter.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayExporter.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PathwayExporter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/ObjectType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ObjectType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/ObjectType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/LineStyle.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/LineStyle.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/LineStyle.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/GpmlFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/GpmlFormat.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/SvgFormat.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/SvgFormat.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/SvgFormat.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PropertyClass.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PropertyClass.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PropertyClass.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/ImageExporter.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ImageExporter.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/ImageExporter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/Pathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Pathway.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/Pathway.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/GroupStyle.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GroupStyle.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/GroupStyle.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/Color.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/Color.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/Color.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PathwayEvent.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayEvent.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PathwayEvent.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/GraphLink.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/GraphLink.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/GraphLink.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/DataNodeType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/DataNodeType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/DataNodeType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/ConvertType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ConvertType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/ConvertType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PathwayListener.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayListener.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PathwayListener.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/ConverterException.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/ConverterException.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/ConverterException.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PropertyType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PropertyType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PropertyType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/PathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/PathwayElement.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/LineType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/LineType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/LineType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/model/OrientationType.java
+===================================================================
+--- trunk/src/core/org/pathvisio/model/OrientationType.java	(revision 919)
++++ trunk/src/core/org/pathvisio/model/OrientationType.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/preferences/Preferences.java
+===================================================================
+--- trunk/src/core/org/pathvisio/preferences/Preferences.java	(revision 919)
++++ trunk/src/core/org/pathvisio/preferences/Preferences.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java
+===================================================================
+--- trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java	(revision 919)
++++ trunk/src/core/org/pathvisio/preferences/PreferenceDlg.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/Visualization.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/Visualization.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/Visualization.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/VisualizationDialog.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/VisualizationDialog.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/VisualizationDialog.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/plugins/VisualizationPlugin.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/plugins/VisualizationPlugin.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/plugins/VisualizationPlugin.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/plugins/PluginManager.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/plugins/PluginManager.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/plugins/PluginManager.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorSetObject.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorSetObject.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorSetObject.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/CriterionComposite.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/CriterionComposite.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/CriterionComposite.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorSetManager.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorSetManager.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorSetManager.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorSet.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorSet.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorSet.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorGradient.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorGradient.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorGradient.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorCriterion.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorCriterion.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorCriterion.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/ColorSetComposite.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/ColorSetComposite.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/ColorSetComposite.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/colorset/Criterion.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/colorset/Criterion.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/colorset/Criterion.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/VisualizationManager.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/VisualizationManager.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/VisualizationManager.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/visualization/LegendPanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/visualization/LegendPanel.java	(revision 919)
++++ trunk/src/core/org/pathvisio/visualization/LegendPanel.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/biopax/gui/BiopaxRefDialog.java
+===================================================================
+--- trunk/src/core/org/pathvisio/biopax/gui/BiopaxRefDialog.java	(revision 919)
++++ trunk/src/core/org/pathvisio/biopax/gui/BiopaxRefDialog.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/biopax/gui/BiopaxDialog.java
+===================================================================
+--- trunk/src/core/org/pathvisio/biopax/gui/BiopaxDialog.java	(revision 919)
++++ trunk/src/core/org/pathvisio/biopax/gui/BiopaxDialog.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/biopax/gui/BiopaxCellEditor.java
+===================================================================
+--- trunk/src/core/org/pathvisio/biopax/gui/BiopaxCellEditor.java	(revision 919)
++++ trunk/src/core/org/pathvisio/biopax/gui/BiopaxCellEditor.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/biopax/BiopaxManager.java
+===================================================================
+--- trunk/src/core/org/pathvisio/biopax/BiopaxManager.java	(revision 919)
++++ trunk/src/core/org/pathvisio/biopax/BiopaxManager.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/AboutDlg.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/AboutDlg.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/AboutDlg.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/GdbCellEditor.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/GdbCellEditor.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/GdbCellEditor.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/PropertyPanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/PropertyPanel.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/PropertyPanel.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/SidePanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/SidePanel.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/SidePanel.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/Engine.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/Engine.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/Engine.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/TabbedSidePanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/TabbedSidePanel.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/TabbedSidePanel.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/CommonActions.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/CommonActions.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/CommonActions.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/GuiMain.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/GuiMain.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/GuiMain.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/AlignActions.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/AlignActions.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/AlignActions.java	(revision 920)
+@@ -1,6 +1,6 @@
+ //	 PathVisio,
+ //	 a tool for data visualization and analysis using Biological Pathways
+-//	 Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++//	 Copyright 2006-2007 BiGCaT Bioinformatics
+ 	//
+ //	 Licensed under the Apache License, Version 2.0 (the "License"); 
+ //	 you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/gui/BackpagePanel.java
+===================================================================
+--- trunk/src/core/org/pathvisio/gui/BackpagePanel.java	(revision 919)
++++ trunk/src/core/org/pathvisio/gui/BackpagePanel.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/search/PathwaySearchComposite.java
+===================================================================
+--- trunk/src/core/org/pathvisio/search/PathwaySearchComposite.java	(revision 919)
++++ trunk/src/core/org/pathvisio/search/PathwaySearchComposite.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/search/SearchMethods.java
+===================================================================
+--- trunk/src/core/org/pathvisio/search/SearchMethods.java	(revision 919)
++++ trunk/src/core/org/pathvisio/search/SearchMethods.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/search/SearchResultTable.java
+===================================================================
+--- trunk/src/core/org/pathvisio/search/SearchResultTable.java	(revision 919)
++++ trunk/src/core/org/pathvisio/search/SearchResultTable.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/debug/Logger.java
+===================================================================
+--- trunk/src/core/org/pathvisio/debug/Logger.java	(revision 919)
++++ trunk/src/core/org/pathvisio/debug/Logger.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/debug/Sleak.java
+===================================================================
+--- trunk/src/core/org/pathvisio/debug/Sleak.java	(revision 919)
++++ trunk/src/core/org/pathvisio/debug/Sleak.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/debug/StopWatch.java
+===================================================================
+--- trunk/src/core/org/pathvisio/debug/StopWatch.java	(revision 919)
++++ trunk/src/core/org/pathvisio/debug/StopWatch.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/GexImportWizard.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/GexImportWizard.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/GexImportWizard.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/DBConnector.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/DBConnector.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/DBConnector.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/ImportInformation.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/ImportInformation.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/ImportInformation.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/CachedData.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/CachedData.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/CachedData.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/DBConnHsqldb.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/DBConnHsqldb.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/DBConnHsqldb.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/Gex.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/Gex.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/Gex.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/GpmlTransfer.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/GpmlTransfer.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/GpmlTransfer.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/DBConnDerby.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/DBConnDerby.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/DBConnDerby.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/Gdb.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/Gdb.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/Gdb.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/DataSources.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/DataSources.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/DataSources.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/data/DBConnDerbyDirectory.java
+===================================================================
+--- trunk/src/core/org/pathvisio/data/DBConnDerbyDirectory.java	(revision 919)
++++ trunk/src/core/org/pathvisio/data/DBConnDerbyDirectory.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/GeneProduct.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/GeneProduct.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Label.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Label.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Label.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/VPoint.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPoint.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/VPoint.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Graphics.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Graphics.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Graphics.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Shape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Shape.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Shape.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/GraphicsShape.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/GraphicsShape.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/GraphicsShape.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/InfoBox.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/InfoBox.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/InfoBox.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/LinAlg.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/LinAlg.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/LinAlg.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Line.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Line.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Line.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Handle.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Handle.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Handle.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/Group.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/Group.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/Group.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/VPathwayElement.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/VPathwayElement.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/view/SelectionBox.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/SelectionBox.java	(revision 919)
++++ trunk/src/core/org/pathvisio/view/SelectionBox.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/FileUtils.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/FileUtils.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/FileUtils.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/Utils.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/Utils.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/Utils.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/SuggestCombo.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/SuggestCombo.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/SuggestCombo.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/ColorConverter.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/ColorConverter.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/ColorConverter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/Converter.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/Converter.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/Converter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/SuggestCellEditor.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/SuggestCellEditor.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/SuggestCellEditor.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/TableColumnResizer.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/TableColumnResizer.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/TableColumnResizer.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/tableviewer/TableData.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/tableviewer/TableData.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/tableviewer/TableData.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/tableviewer/PathwayTable.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/tableviewer/PathwayTable.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/tableviewer/PathwayTable.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/PathwayParser.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/PathwayParser.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/PathwayParser.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/JarUtils.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/JarUtils.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/JarUtils.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/src/core/org/pathvisio/util/SwtUtils.java
+===================================================================
+--- trunk/src/core/org/pathvisio/util/SwtUtils.java	(revision 919)
++++ trunk/src/core/org/pathvisio/util/SwtUtils.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/MckoiGDBMaker.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/MckoiGDBMaker.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/MckoiGDBMaker.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/CreateGDB.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/CreateGDB.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/CreateGDB.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/DerbyGDBMaker.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/DerbyGDBMaker.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/DerbyGDBMaker.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/AppendGDB.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/AppendGDB.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/AppendGDB.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/H2GDBMaker.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/H2GDBMaker.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/H2GDBMaker.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/HsqldbGDBMaker.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/HsqldbGDBMaker.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/HsqldbGDBMaker.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/ensembl2visio/ensembl2visio/GDBMaker.java
+===================================================================
+--- trunk/tools/ensembl2visio/ensembl2visio/GDBMaker.java	(revision 919)
++++ trunk/tools/ensembl2visio/ensembl2visio/GDBMaker.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DgpmlOutputter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/Test.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/DiffOutputter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyDoc.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiff.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicCost.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicCost.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicCost.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicSim.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SearchNode.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/SimilarityFunction.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/BasicOutputter.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/CostFunction.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/CostFunction.java	(revision 919)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/CostFunction.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gdb2visio/DbTest.java
+===================================================================
+--- trunk/tools/gdb2visio/DbTest.java	(revision 919)
++++ trunk/tools/gdb2visio/DbTest.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gdb2visio/TestDb.java
+===================================================================
+--- trunk/tools/gdb2visio/TestDb.java	(revision 919)
++++ trunk/tools/gdb2visio/TestDb.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gdb2visio/TestDbPerformance.java
+===================================================================
+--- trunk/tools/gdb2visio/TestDbPerformance.java	(revision 919)
++++ trunk/tools/gdb2visio/TestDbPerformance.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gdb2visio/TestData.java
+===================================================================
+--- trunk/tools/gdb2visio/TestData.java	(revision 919)
++++ trunk/tools/gdb2visio/TestData.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/gdb2visio/TestInputGroup.java
+===================================================================
+--- trunk/tools/gdb2visio/TestInputGroup.java	(revision 919)
++++ trunk/tools/gdb2visio/TestInputGroup.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/ReferenceSearchAllGenes.java
+===================================================================
+--- trunk/tools/Ensembl work/ReferenceSearchAllGenes.java	(revision 919)
++++ trunk/tools/Ensembl work/ReferenceSearchAllGenes.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/UpdateEnsemblDatabase.java
+===================================================================
+--- trunk/tools/Ensembl work/UpdateEnsemblDatabase.java	(revision 919)
++++ trunk/tools/Ensembl work/UpdateEnsemblDatabase.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/EnsemblFTPConnection.java
+===================================================================
+--- trunk/tools/Ensembl work/EnsemblFTPConnection.java	(revision 919)
++++ trunk/tools/Ensembl work/EnsemblFTPConnection.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/ReferenceSearchByName.java
+===================================================================
+--- trunk/tools/Ensembl work/ReferenceSearchByName.java	(revision 919)
++++ trunk/tools/Ensembl work/ReferenceSearchByName.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/Ensembl.java
+===================================================================
+--- trunk/tools/Ensembl work/Ensembl.java	(revision 919)
++++ trunk/tools/Ensembl work/Ensembl.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/Ensembl work/EnsemblVersionCheck.java
+===================================================================
+--- trunk/tools/Ensembl work/EnsemblVersionCheck.java	(revision 919)
++++ trunk/tools/Ensembl work/EnsemblVersionCheck.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/genMAPP2EUGene/Logger.java
+===================================================================
+--- trunk/tools/genMAPP2EUGene/Logger.java	(revision 919)
++++ trunk/tools/genMAPP2EUGene/Logger.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/genMAPP2EUGene/GenMAPP2EUGene.java
+===================================================================
+--- trunk/tools/genMAPP2EUGene/GenMAPP2EUGene.java	(revision 919)
++++ trunk/tools/genMAPP2EUGene/GenMAPP2EUGene.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/ExitListener.java
+===================================================================
+--- trunk/tools/xml-import test/ExitListener.java	(revision 919)
++++ trunk/tools/xml-import test/ExitListener.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/XmlTree.java
+===================================================================
+--- trunk/tools/xml-import test/XmlTree.java	(revision 919)
++++ trunk/tools/xml-import test/XmlTree.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/WindowUtilities.java
+===================================================================
+--- trunk/tools/xml-import test/WindowUtilities.java	(revision 919)
++++ trunk/tools/xml-import test/WindowUtilities.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/Echo07.java
+===================================================================
+--- trunk/tools/xml-import test/Echo07.java	(revision 919)
++++ trunk/tools/xml-import test/Echo07.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/BigCat.java
+===================================================================
+--- trunk/tools/xml-import test/BigCat.java	(revision 919)
++++ trunk/tools/xml-import test/BigCat.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/Element.java
+===================================================================
+--- trunk/tools/xml-import test/Element.java	(revision 919)
++++ trunk/tools/xml-import test/Element.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/SimpleTree.java
+===================================================================
+--- trunk/tools/xml-import test/SimpleTree.java	(revision 919)
++++ trunk/tools/xml-import test/SimpleTree.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/xml-import test/TreeList.java
+===================================================================
+--- trunk/tools/xml-import test/TreeList.java	(revision 919)
++++ trunk/tools/xml-import test/TreeList.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlLookup2Txt/Gmml2TxtLookup.java
+===================================================================
+--- trunk/tools/GmmlLookup2Txt/Gmml2TxtLookup.java	(revision 919)
++++ trunk/tools/GmmlLookup2Txt/Gmml2TxtLookup.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/RMainLoopCallbacks.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/RFactor.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RFactor.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/RFactor.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/Mutex.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/Mutex.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/Mutex.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/RBool.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RBool.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/RBool.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/REXP.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/REXP.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/REXP.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/tools/getsp.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/tools/getsp.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/tools/getsp.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/RVector.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RVector.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/RVector.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/Rengine.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/Rengine.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/Rengine.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/RList.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/RList.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/RList.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/examples/rtest.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/examples/rtest.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/examples/rtest.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java
+===================================================================
+--- trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java	(revision 919)
++++ trunk/tools/GmmlVisio2R/JRI/examples/rtest2.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 
+Index: trunk/tools/expressionParser/Main.java
+===================================================================
+--- trunk/tools/expressionParser/Main.java	(revision 919)
++++ trunk/tools/expressionParser/Main.java	(revision 920)
+@@ -1,6 +1,6 @@
+ // PathVisio,
+ // a tool for data visualization and analysis using Biological Pathways
+-// Copyright 2006-2007 PathVisio contributors (for a complete list, see CONTRIBUTORS.txt)
++// Copyright 2006-2007 BiGCaT Bioinformatics
+ //
+ // Licensed under the Apache License, Version 2.0 (the "License"); 
+ // you may not use this file except in compliance with the License. 

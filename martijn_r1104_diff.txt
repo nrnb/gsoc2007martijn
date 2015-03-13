@@ -1,0 +1,102 @@
+Index: trunk/src/core/org/pathvisio/Engine.java
+===================================================================
+--- trunk/src/core/org/pathvisio/Engine.java	(revision 1103)
++++ trunk/src/core/org/pathvisio/Engine.java	(revision 1104)
+@@ -123,10 +123,6 @@
+ 	 */
+ 	public List<PathwayElement> clipboard = null;
+ 
+-	public void openPathway(String fileName) throws ConverterException {
+-		openPathway(new File(fileName));
+-	}
+-	
+ 	public void openPathway(File pathwayFile) throws ConverterException {
+ 		openPathway(pathwayFile, null);
+ 	}
+@@ -155,11 +151,7 @@
+ 			createVPathway(pathway, wrapper);
+ 		}
+ 	}
+-	
+-	public void openPathway(String fileName, VPathwayWrapper wrapper) throws ConverterException {
+-		openPathway(new File(fileName), wrapper);
+-	}
+-	
++		
+ 	/**
+ 	 * Open a pathway from a gpml file
+ 	 */
+@@ -170,7 +162,7 @@
+ 		
+ 		// initialize new JDOM gpml representation and read the file
+ 		_pathway = new Pathway();
+-		if (pwf.endsWith(".mapp"))
++		if (pwf.endsWith("." + Engine.GENMAPP_FILE_EXTENSION))
+ 		{
+ 			_pathway.readFromMapp(new File(pwf));
+ 		}
+@@ -202,9 +194,9 @@
+ 			openPathway(f, w);
+ 		} else {
+ 			try {
+-				f = File.createTempFile("urlPathway", ".gpml");
++				f = File.createTempFile("urlPathway", "." + Engine.PATHWAY_FILE_EXTENSION);
+ 				FileUtils.downloadFile(url, f);
+-				openPathway(f.toString(), w);
++				openPathway(f, w);
+ 			} catch(Exception e) {
+ 				throw new ConverterException(e);
+ 			}
+Index: trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java
+===================================================================
+--- trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java	(revision 1103)
++++ trunk/src/swt/org/pathvisio/gui/swt/SwtEngine.java	(revision 1104)
+@@ -160,7 +160,15 @@
+ 			
+ 			File xmlFile = pathway.getSourceFile();
+ 			if(xmlFile != null) {
+-				fd.setFileName(xmlFile.getName());
++				String fName = xmlFile.getName();
++				System.out.println (fName);
++				if (fName.endsWith ("." + Engine.GENMAPP_FILE_EXTENSION))
++				{
++					fName = fName.substring(0,
++							fName.length() - Engine.GENMAPP_FILE_EXTENSION.length() - 1);
++					System.out.println (fName);
++				}
++				fd.setFileName(fName);
+ 				fd.setFilterPath(xmlFile.getPath());
+ 			} else {
+ 					fd.setFilterPath(SwtPreference.SWT_DIR_PWFILES.getValue());
+@@ -294,9 +302,11 @@
+ 		{
+ 			try { 
+ 				VPathwayWrapper w = createWrapper();
+-				Engine.getCurrent().openPathway(pwf, w);
++				Engine.getCurrent().openPathway(new File(pwf), w);
+ 				updateTitle();
+-			} catch(ConverterException e) {		
++			} 
++			catch(ConverterException e) 
++			{		
+ 				if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))
+ 				{
+ 					MessageDialog.openError(getWindow().getShell(), 
+@@ -310,6 +320,17 @@
+ 						"\nSee error log for details");
+ 					Logger.log.error("Unable to open Gpml file", e);
+ 				}
++				else if (pwf.endsWith("." + Engine.GENMAPP_FILE_EXTENSION))
++				{
++					MessageDialog.openError(getWindow().getShell(), 
++						"Unable to open Mapp file", 
++						"Unable to open Mapp file.\n\n" +					
++						"Check that the file you're trying to open really is a "+
++						"Pathway in the GenMAPP .mapp format. If the problem persists, please contact " +
++						"the developers at " + Globals.DEVELOPER_EMAIL + ". Please include the " +
++						"file you're trying to open and the error log.");
++						Logger.log.error("Unable to open Gpml file", e);						
++				}
+ 				else
+ 				{
+ 					//TODO: refactor these error messages,

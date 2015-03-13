@@ -1,0 +1,381 @@
+Index: trunk/src/core/org/pathvisio/view/VPathway.java
+===================================================================
+--- trunk/src/core/org/pathvisio/view/VPathway.java	(revision 1091)
++++ trunk/src/core/org/pathvisio/view/VPathway.java	(revision 1092)
+@@ -64,6 +64,21 @@
+ 	private static final long serialVersionUID = 1L;
+ 	static final double M_PASTE_OFFSET = 10 * 15;
+ 	public static final double ZOOM_TO_FIT = -1;
++
++	private boolean selectionEnabled = true;
++
++	/**
++	   Returns true if the selection capability of this VPathway is enabled
++	 */
++	public boolean getSelectionEnabled() { return selectionEnabled; }
++
++	/**
++	   You can disable the selection capability of this VPathway by
++	   passing false.  This is not used within Pathvisio, but it is
++	   meant for embedding VPathway in other applications, where
++	   selections may not be needed.
++	 */
++	public void setSelectionEnabled(boolean value) { selectionEnabled = value; }
+ 	
+ 	private VPathwayWrapper parent; // may be null
+ 	
+@@ -710,6 +725,8 @@
+ 	 */
+ 	private void startSelecting(Point2D vp)
+ 	{
++		if (!selectionEnabled) return;
++		
+ 		vPreviousX = (int)vp.getX();
+ 		vPreviousY = (int)vp.getY();
+ 		isDragging = true;
+@@ -815,6 +832,8 @@
+ 	
+ 	void doClickSelect(Point2D p2d, MouseEvent e)
+ 	{
++		if (!selectionEnabled) return;
++
+ 		//Ctrl pressed, add/remove from selection
+ 		boolean ctrlPressed =  e.isKeyDown(MouseEvent.M_CTRL);
+ 		if(ctrlPressed) 
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java	(revision 1091)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffWindow.java	(revision 1092)
+@@ -16,29 +16,20 @@
+ //
+ package org.pathvisio.gpmldiff;
+ 
+-
+-
++import java.io.File;
+ import java.io.IOException;
+-import java.awt.BorderLayout;
+-import java.awt.GridLayout;
+-import java.awt.Container;
++import java.awt.*;
+ import java.awt.event.ActionEvent;
+-import javax.swing.AbstractAction;
+-import javax.swing.Action;
+-import javax.swing.JFileChooser;
+-import javax.swing.JFrame;
+-import javax.swing.JMenu;
+-import javax.swing.JMenuBar;
+-import javax.swing.JOptionPane;
+-import javax.swing.JScrollPane;
++import javax.swing.*;
+ import org.pathvisio.debug.Logger;
+-import org.pathvisio.gui.swing.actions.CommonActions;
+ import org.pathvisio.model.ConverterException;
+ import org.pathvisio.model.Pathway;
+ import org.pathvisio.view.VPathway;
++import org.pathvisio.view.VPathwayEvent;
++import org.pathvisio.view.VPathwayListener;
+ import org.pathvisio.view.swing.VPathwaySwing;
+ 
+-class GpmlDiffWindow extends JFrame
++class GpmlDiffWindow extends JFrame implements VPathwayListener
+ {
+ 	private static final int WINDOW_WIDTH = 1000;
+ 	private static final int WINDOW_HEIGHT = 500;
+@@ -46,15 +37,66 @@
+ 	private JScrollPane[] pwyPane = new JScrollPane[2];
+ 	private JMenuBar menubar;
+ 
+-	private static final int PWY_OLD = 0;
+-	private static final int PWY_NEW = 1;
++	public static final int PWY_OLD = 0;
++	public static final int PWY_NEW = 1;
+ 
+ 	private VPathwaySwing[] wrapper = { null, null };
+ 	private VPathway[] view = { null, null };
+ 	private PwyDoc[] doc = { null, null };
+ 
++	private PanelOutputter outputter = null;
++
+ 	double zoomFactor = 100;
++	JPanel centerPanel = null;
+ 	
++
++	public void setFile (int pwyType, File f)
++	{
++		Pathway pwy = new Pathway();
++		doc[pwyType] = PwyDoc.read (f);
++		assert (doc[pwyType] != null);
++					
++		wrapper[pwyType] = new VPathwaySwing(pwyPane[pwyType]);
++
++		view[pwyType] = wrapper[pwyType].createVPathway();
++		view[pwyType].addVPathwayListener(this);
++		view[pwyType].setSelectionEnabled (false);
++		view[pwyType].fromGmmlData(doc[pwyType].getPathway());
++		view[pwyType].setPctZoom (zoomFactor);
++
++		outputter = null; // invalidate putative remaining outputter
++		
++		if (view[PWY_OLD] != null && view[PWY_NEW] != null)
++		{
++			SearchNode result = doc[PWY_OLD].findCorrespondence (doc[PWY_NEW], new BetterSim(), new BasicCost());
++			outputter = new PanelOutputter(view[PWY_OLD], view[PWY_NEW]);
++			doc[PWY_OLD].writeResult (result, doc[PWY_NEW], outputter);
++			try
++			{
++				outputter.flush();
++			}
++			catch (IOException ex) { ex.printStackTrace(); }
++
++			// merge models of the two pathways
++			// TODO: find solution for inequal sized pathways.
++			pwyPane[0].getHorizontalScrollBar().setModel(
++				pwyPane[1].getHorizontalScrollBar().getModel());
++			pwyPane[0].getVerticalScrollBar().setModel(
++				pwyPane[1].getVerticalScrollBar().getModel());
++		}
++				
++		/*catch (ConverterException ce)
++		  {
++		  JOptionPane.showMessageDialog (
++		  parent,
++		  "Exception while opening gpml file.\n" +
++		  "Please check that the file you opened is a valid Gpml file.",
++		  "Open Error", JOptionPane.ERROR_MESSAGE);
++		  Logger.log.error ("Error opening gpml", ce);
++		  }*/
++		
++	}
++	
+ 	private class LoadPwyAction extends AbstractAction
+ 	{
+ 		private int pwyType;
+@@ -79,46 +121,7 @@
+ 			int status = jfc.showDialog (parent, "Load");
+ 			if (status == JFileChooser.APPROVE_OPTION)
+ 			{
+-				Pathway pwy = new Pathway();
+-				//try
+-				//{
+-					doc[pwyType] = PwyDoc.read (jfc.getSelectedFile());
+-					assert (doc[pwyType] != null);
+-					
+-					wrapper[pwyType] = new VPathwaySwing(pwyPane[pwyType]);
+-
+-					view[pwyType] = wrapper[pwyType].createVPathway();
+-					view[pwyType].fromGmmlData(doc[pwyType].getPathway());
+-					view[pwyType].setPctZoom (zoomFactor);
+-					
+-					if (view[PWY_OLD] != null && view[PWY_NEW] != null)
+-					{
+-						SearchNode result = doc[PWY_OLD].findCorrespondence (doc[PWY_NEW], new BetterSim(), new BasicCost());
+-						PanelOutputter outputter = new PanelOutputter(view[PWY_OLD], view[PWY_NEW]);
+-						doc[PWY_OLD].writeResult (result, doc[PWY_NEW], outputter);
+-						try
+-						{
+-							outputter.flush();
+-						}
+-						catch (IOException ex) { ex.printStackTrace(); }
+-
+-						// merge models of the two pathways
+-						pwyPane[0].getHorizontalScrollBar().setModel(
+-							pwyPane[1].getHorizontalScrollBar().getModel());
+-						pwyPane[0].getVerticalScrollBar().setModel(
+-							pwyPane[1].getVerticalScrollBar().getModel());
+-					}
+-					/*}
+-				
+-				catch (ConverterException ce)
+-				{
+-					JOptionPane.showMessageDialog (
+-						parent,
+-						"Exception while opening gpml file.\n" +
+-						"Please check that the file you opened is a valid Gpml file.",
+-						"Open Error", JOptionPane.ERROR_MESSAGE);
+-					Logger.log.error ("Error opening gpml", ce);
+-					}*/
++				setFile (pwyType, jfc.getSelectedFile());
+ 			}
+ 		}
+ 	}
+@@ -214,7 +217,7 @@
+ 
+ 		setSize (WINDOW_WIDTH, WINDOW_HEIGHT);
+ 		Container contents = getContentPane();
+-		contents.setLayout (new GridLayout(1,2));
++		contents.setLayout (new BoxLayout(contents, BoxLayout.X_AXIS));
+ 		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+ 		
+ 		menubar = new JMenuBar();
+@@ -226,9 +229,38 @@
+ 			pwyPane[i] = new JScrollPane();
+ 		}
+ 
++		centerPanel = new JPanel();
++		
+ 		contents.add (pwyPane[PWY_OLD]);
++		pwyPane[PWY_OLD].setPreferredSize (new Dimension (400, 300));
++		contents.add (centerPanel);
++		centerPanel.setPreferredSize (new Dimension (200, 300));
++		centerPanel.setMinimumSize (new Dimension (200, 300));
+ 		contents.add (pwyPane[PWY_NEW]);
++		pwyPane[PWY_NEW].setPreferredSize (new Dimension (400, 300));
+ 		validate();
+ 	}
+ 
++	public void vPathwayEvent (VPathwayEvent e)
++	{
++		if (e.getType() == VPathwayEvent.ELEMENT_CLICKED_DOWN)
++		{
++			if (e.getSource() == view[PWY_OLD])
++			{
++				System.out.println ("Element clicked in old pathway");
++			}
++			else if (e.getSource() == view[PWY_NEW])
++			{
++				System.out.println ("Element clicked in new pathway");
++			}
++			if (outputter != null)
++			{
++				PanelOutputter.ModData mod = outputter.modsByElt.get (e.getAffectedElement());
++				if (mod != null)
++				{
++					System.out.println ("Modifiied! " + mod.hint);
++				}
++			}		
++		}
++	}
+ }
+\ No newline at end of file
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 1091)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PwyElt.java	(revision 1092)
+@@ -31,6 +31,7 @@
+ {			
+ 	static String summary(PathwayElement elt)
+ 	{
++		if (elt == null) return "null"; // TODO, why is this necessary?
+ 		String result = "[" + ObjectType.getTagMapping (elt.getObjectType());
+ 		String tmp;
+ 		List<PropertyType> props = elt.getAttributes(true);
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PanelOutputter.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PanelOutputter.java	(revision 1091)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/PanelOutputter.java	(revision 1092)
+@@ -68,11 +68,11 @@
+ 		if (velt != null) velt.highlight (Color.RED);
+ 	}
+ 
+-		/**
++	/**
+ 	   private data about a modification,
+ 	   for displaying hints in the middle.
+ 	 */
+-	private class ModData implements Comparable<ModData>
++	public class ModData implements Comparable<ModData>
+ 	{
+ 		int midy;
+ 		String hint;
+@@ -118,7 +118,7 @@
+ 		return null;
+ 	}
+ 
+-		PathwayElement curOldElt = null;
++	PathwayElement curOldElt = null;
+ 	PathwayElement curNewElt = null;
+ 	Set<String> curHint = null;
+ 	
+@@ -135,15 +135,15 @@
+ 	
+ 	public void modifyEnd ()
+ 	{
+-		VPathwayElement velt = findElt (curOldElt, vpwy[PWY_OLD]);
+-		assert (velt != null);
+-		velt.highlight (Color.YELLOW);
+-		Rectangle r1 = velt.getVBounds();
++		VPathwayElement veltOld = findElt (curOldElt, vpwy[PWY_OLD]);
++		assert (veltOld != null);
++		veltOld.highlight (Color.YELLOW);
++		Rectangle r1 = veltOld.getVBounds();
+ 		
+-		velt = findElt (curNewElt, vpwy[PWY_NEW]);
+-		assert (velt != null);
+-		velt.highlight (Color.YELLOW);
+-		Rectangle r2 = velt.getVBounds();
++		VPathwayElement veltNew = findElt (curNewElt, vpwy[PWY_NEW]);
++		assert (veltNew != null);
++		veltNew.highlight (Color.YELLOW);
++		Rectangle r2 = veltNew.getVBounds();
+ 
+ 		String completeHint = "";
+ 		for (String hint : curHint)
+@@ -152,21 +152,26 @@
+ 			completeHint += ", ";
+ 		}
+ 		completeHint += "changed";
+-		
+-		modifications.add (
+-			new ModData (
++
++		ModData mod = new ModData (
+ 				(int)(r1.getX() + r1.getWidth() / 2),
+ 				(int)(r1.getY() + r1.getHeight() / 2),
+ 				(int)(r2.getX() + r2.getWidth() / 2),
+ 				(int)(r2.getY() + r2.getHeight() / 2),
+-				completeHint)
+-			);
++				completeHint);
++
++		modifications.add (mod);
++		modsByElt.put (veltOld, mod);
++		modsByElt.put (veltNew, mod);
+ 		
+ 		curOldElt = null;
+ 		curNewElt = null;
+ 	}
+ 
+ 	private List <ModData> modifications = new ArrayList<ModData>();
++
++	// TODO: accessors
++	public Map <VPathwayElement, ModData> modsByElt = new HashMap<VPathwayElement, ModData>();
+ 	
+ 	public void modifyAttr(String attr, String oldVal, String newVal)
+ 	{
+Index: trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java
+===================================================================
+--- trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java	(revision 1091)
++++ trunk/tools/gpmldiff/src/org/pathvisio/gpmldiff/GpmlDiffGui.java	(revision 1092)
+@@ -16,11 +16,29 @@
+ //
+ package org.pathvisio.gpmldiff;
+ 
++import java.io.File;
++
+ class GpmlDiffGui
+ {
+ 	public static void main (String[] argv)
+-	{
++	{		
+ 		GpmlDiffWindow window = new GpmlDiffWindow();
++		if (argv.length > 0)
++		{
++			File f = new File (argv[0]);
++			if (f.exists())
++			{				
++				window.setFile(GpmlDiffWindow.PWY_OLD, f);
++				if (argv.length > 1)
++				{
++					f = new File (argv[1]);
++					if (f.exists())
++					{
++						window.setFile (GpmlDiffWindow.PWY_NEW, f);
++					}
++				}
++			}
++		}
+ 		window.setVisible (true);
+ 	}
+ }
+\ No newline at end of file
